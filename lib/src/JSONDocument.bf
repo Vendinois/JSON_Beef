@@ -33,6 +33,11 @@ namespace JSON_Beef
 		SEARCH_VALUE
 	}
 
+	enum JSON_ERRORS
+	{
+		INVALID_NUMBER_REPRESENTATION
+	}
+
 	public class JSONDocument
 	{
 		private Dictionary<char8, char8> escapedChar;
@@ -152,7 +157,7 @@ namespace JSON_Beef
 					typeParsed = JSON_TYPES.FLOAT;
 					strNum.Append(c);
 				}
-				else if (!c.IsDigit && (c != '-'))
+				else if (!c.IsDigit && (c != '-') && (c != 'e') && (c != 'E'))
 				{
 					break;
 				}
@@ -165,11 +170,11 @@ namespace JSON_Beef
 			// Todo: Implement proper error mechanism
 			if (typeParsed == JSON_TYPES.INTEGER)
 			{
-				outInt = int.Parse(strNum);
+				outInt = JSONUtil.ParseInt(strNum);
 			}
 			else if (typeParsed == JSON_TYPES.FLOAT)
 			{
-				outFloat = float.Parse(strNum);
+				outFloat = JSONUtil.ParseFloat(strNum);
 			}
 
 			// I always want the last parsed char to be a number

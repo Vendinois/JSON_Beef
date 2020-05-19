@@ -1,9 +1,8 @@
 using System;
 using System.IO;
-using System.Collections;
-using System.Text;
+using JSON_Beef;
 
-namespace JSON_Beef
+namespace JSON_Beef_Test
 {
 	class Program
 	{
@@ -19,6 +18,7 @@ namespace JSON_Beef
 			TestArraysValidation();
 			TestObjectsValidation();
 			TestJsonFileValidation();
+			TestJsonUtil();
 
 			Console.WriteLine("Press any [enter] to exit.");
 			Console.In.Read();
@@ -131,6 +131,48 @@ namespace JSON_Beef
 			}
 
 			Console.WriteLine("Json file validation tests passed");
+		}
+
+		static void TestJsonUtil()
+		{
+			Runtime.AssertTrue(JSONUtil.ParseInt("42") == 42, "JSONUtil test #1 failed");
+			Runtime.AssertTrue(JSONUtil.ParseInt("42e5") == 4200000, "JSONUtil test #2 failed");
+			Runtime.AssertTrue(JSONUtil.ParseInt("-42e3") == -42000, "JSONUtil test #3 failed");
+
+			var res = JSONUtil.ParseInt("4.2");
+			Runtime.AssertTrue(ValidError(ref res), "JSONUtil test #4 failed");
+
+			res = JSONUtil.ParseInt("42e-3");
+			Runtime.AssertTrue(ValidError(ref res), "JSONUtil test #5 failed");
+
+			Runtime.AssertTrue(JSONUtil.ParseFloat("42") == 42f, "JSONUtil test #6 failed");
+			Runtime.AssertTrue(JSONUtil.ParseFloat("-42") == -42f, "JSONUtil test #7 failed");
+			Runtime.AssertTrue(JSONUtil.ParseFloat("4.2") == 4.2f, "JSONUtil test #8 failed");
+			Runtime.AssertTrue(JSONUtil.ParseFloat("-4.2") == -4.2f, "JSONUtil test #9 failed");
+			Runtime.AssertTrue(JSONUtil.ParseFloat("42e3") == 42000f, "JSONUtil test #10 failed");
+			Runtime.AssertTrue(JSONUtil.ParseFloat("-42e3") == -42000f, "JSONUtil test #11 failed");
+			Runtime.AssertTrue(JSONUtil.ParseFloat("4.2e3") == 4200f, "JSONUtil test #12 failed");
+			Runtime.AssertTrue(JSONUtil.ParseFloat("-4.2e3") == -4200f, "JSONUtil test #13 failed");
+			Runtime.AssertTrue(JSONUtil.ParseFloat("4.2e-3") == 0.0042f, "JSONUtil test #14 failed");
+			Runtime.AssertTrue(JSONUtil.ParseFloat("-4.2e-3") == -0.0042f, "JSONUtil test #15 failed");
+
+			Console.WriteLine("JSONUtil tests passed");
+		}
+
+		static bool ValidError(ref Result<int, JSON_ERRORS> res)
+		{
+			switch (res)
+			{
+			case .Err(.INVALID_NUMBER_REPRESENTATION):
+				return true;
+			default:
+				return false;
+			}
+		}
+
+		static bool FloatEquals(float a, float b)
+		{
+			return Math.Abs(a - b) < Float.Epsilon;
 		}
 	}
 }

@@ -1,8 +1,0 @@
-FileVersion = 1
-
-[Project]
-Name = "JSON_Beef"
-StartupObject = "JSON_Beef.Program"
-
-[Configs.Debug.Win64]
-PostBuildCmds = ["Execute(\"powershell.exe -Command copy $(ProjectDir)/json/valid.json $(TargetDir)/valid.json\")"]
