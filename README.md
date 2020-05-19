@@ -5,5 +5,4 @@ Still a work in progress.
 
 Todo:
 - Handle unescaped characters in strings as error.
-- Parse Numbers written in scientific notation.
 - Parse UTF-8 characters e.g.: u0063
