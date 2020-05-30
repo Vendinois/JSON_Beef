@@ -56,7 +56,7 @@ namespace JSON_Beef
 			delete dictionary;
 		}
 
-		public T Get<T>(String key)
+		public Result<T, JSON_ERRORS> Get<T>(String key)
 		{
 			if (dictionary.ContainsKey(key))
 			{
@@ -65,11 +65,11 @@ namespace JSON_Beef
 				if (value.VariantType == typeof(T))
 				{
 					T ret = value.Get<T>();
-					return ret;
+					return .Ok(ret);
 				}
 			}
 
-			return default;
+			return .Err(.KEY_NOT_FOUND);
 		}
 
 		public Variant GetVariant(String key)

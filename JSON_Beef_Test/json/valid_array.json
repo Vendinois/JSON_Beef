@@ -1,0 +1,48 @@
+[
+	[
+		42,
+		-42,
+		1.8,
+		-1.8,
+		1.8e+5,
+		1.8e-5,
+		42e7,
+		-42e7,
+		true,
+		false,
+		null,
+		"a string"
+	],
+	{
+		"a int": 42,
+		"a negative int": -42,
+		"a float": 1.8,
+		"a negative float": -1.8,
+		"a float scientific notation number": 1.8e+42,
+		"a float negative scientific notation number": 1.8e-42,
+		"an int scientific notation number": 42e7,
+		"an int negative scientific notation number": -42e7,
+		"true": true,
+		"false": false,
+		"null": null,
+		"a string": "a string",
+		"escaped char in string": "line 1 \n\tline 2 \r\n\tline 2",
+		"an array": [
+			42,
+			-42,
+			1.8,
+			-1.8,
+			1.8e+5,
+			1.8e-3,
+			42e7,
+			-42e7,
+			true,
+			false,
+			null,
+			"a string"
+		],
+		"an object": {
+			"hello": true
+		}
+	}
+]

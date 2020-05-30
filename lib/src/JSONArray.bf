@@ -95,11 +95,11 @@ namespace JSON_Beef
 			list.Add(Variant.Create(v, true));
 		}
 
-		public T Get<T>(int idx)
+		public Result<T, JSON_ERRORS> Get<T>(int idx)
 		{
 			if (idx > list.Count)
 			{
-				return default;
+				return .Err(.INDEX_OUT_OF_BOUNDS);
 			}
 
 			let value = list[idx];
@@ -107,10 +107,10 @@ namespace JSON_Beef
 			if (value.VariantType == typeof(T))
 			{
 				T ret = value.Get<T>();
-				return ret;
+				return .Ok(ret);
 			}
 
-			return default;
+			return .Err(.INVALID_RETURN_TYPE);
 		}
 
 		public override void ToString(String str)

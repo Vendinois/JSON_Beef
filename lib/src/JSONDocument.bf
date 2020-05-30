@@ -35,7 +35,10 @@ namespace JSON_Beef
 
 	enum JSON_ERRORS
 	{
-		INVALID_NUMBER_REPRESENTATION
+		INVALID_NUMBER_REPRESENTATION,
+		INVALID_RETURN_TYPE,
+		INDEX_OUT_OF_BOUNDS,
+		KEY_NOT_FOUND
 	}
 
 	public class JSONDocument
@@ -157,7 +160,7 @@ namespace JSON_Beef
 					typeParsed = JSON_TYPES.FLOAT;
 					strNum.Append(c);
 				}
-				else if (!c.IsDigit && (c != '-') && (c != 'e') && (c != 'E'))
+				else if (!c.IsDigit && (c != '-') && (c != 'e') && (c != 'E') && (c != '+'))
 				{
 					break;
 				}
@@ -202,15 +205,15 @@ namespace JSON_Beef
 
 			if (str.Equals("true"))
 			{
-				outLiteral = JSON_LITERAL.TRUE;
+				outLiteral = .TRUE;
 			}
 			else if (str.Equals("false"))
 			{
-				outLiteral = JSON_LITERAL.FALSE;
+				outLiteral = .FALSE;
 			}
 			else if (str.Equals("null"))
 			{
-				outLiteral = JSON_LITERAL.NULL;
+				outLiteral = .NULL;
 			}
 			else
 			{
@@ -271,10 +274,10 @@ namespace JSON_Beef
 				else if (c.IsLetter)
 				{
 					let str = scope String(&json[i]);
-					var outLiteral = JSON_LITERAL.NULL;
+					JSON_LITERAL outLiteral = .NULL;
 					i += ParseLiteral(str, ref outLiteral);
 
-					typeParsed = JSON_TYPES.LITERAL;
+					typeParsed = .LITERAL;
 
 					array.Add(outLiteral);
 				}
