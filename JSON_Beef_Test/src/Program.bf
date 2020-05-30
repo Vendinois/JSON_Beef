@@ -237,7 +237,7 @@ namespace JSON_Beef_Test
 				{
 					let array = doc.ParseArray(data);
 					ValidateArrayFile(array);
-					delete array;
+					delete array.Get();
 				}
 			}
 
@@ -250,7 +250,7 @@ namespace JSON_Beef_Test
 				{
 					let object = doc.ParseObject(data);
 					ValidateObject(object);
-					delete object;
+					delete object.Get();
 				}
 			}
 

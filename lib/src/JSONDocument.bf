@@ -38,7 +38,11 @@ namespace JSON_Beef
 		INVALID_NUMBER_REPRESENTATION,
 		INVALID_RETURN_TYPE,
 		INDEX_OUT_OF_BOUNDS,
-		KEY_NOT_FOUND
+		KEY_NOT_FOUND,
+		STRING_NOT_TERMINATED,
+		INVALID_LITERAL_VALUE,
+		INVALID_OBJECT,
+		INVALID_ARRAY
 	}
 
 	public class JSONDocument
@@ -87,21 +91,21 @@ namespace JSON_Beef
 			}
 		}
 
-		public JSONArray ParseArray(String json)
+		public Result<JSONArray, JSON_ERRORS> ParseArray(String json)
 		{
 			var array = new JSONArray();
 			ParseArray(json, ref array);
 			return array;
 		}
 
-		public JSONObject ParseObject(String json)
+		public Result<JSONObject, JSON_ERRORS> ParseObject(String json)
 		{
 			var object = new JSONObject();
 			ParseObject(json, ref object);
 			return object;
 		}
 
-		private int ParseString(String json, String outString)
+		private Result<int, JSON_ERRORS> ParseString(String json, String outString)
 		{
 			int i;
 			outString.Clear();
@@ -135,16 +139,15 @@ namespace JSON_Beef
 				}
 			}
 
-			// Todo: Implement proper error mechanism
 			if (json[i] != '"')
 			{
-				Console.Error.WriteLine("Error: String value not terminated");
+				return .Err(.STRING_NOT_TERMINATED);
 			}
 
-			return i;
+			return .Ok(i);
 		}
 
-		private int ParseNumber(String json, ref int outInt, ref float outFloat, ref JSON_TYPES typeParsed)
+		private Result<int, JSON_ERRORS> ParseNumber(String json, ref int outInt, ref float outFloat, ref JSON_TYPES typeParsed)
 		{
 			var strNum = scope String();
 
@@ -170,21 +173,36 @@ namespace JSON_Beef
 				}
 			}
 
-			// Todo: Implement proper error mechanism
 			if (typeParsed == JSON_TYPES.INTEGER)
 			{
-				outInt = JSONUtil.ParseInt(strNum);
+				let res = JSONUtil.ParseInt(strNum);
+
+				switch (res)
+				{
+				case .Err(.INVALID_NUMBER_REPRESENTATION):
+					return .Err(.INVALID_NUMBER_REPRESENTATION);
+				default:
+					outInt = res.Get();
+				}
 			}
 			else if (typeParsed == JSON_TYPES.FLOAT)
 			{
-				outFloat = JSONUtil.ParseFloat(strNum);
+				let res = JSONUtil.ParseFloat(strNum);
+
+				switch (res)
+				{
+				case .Err(.INVALID_NUMBER_REPRESENTATION):
+					return .Err(.INVALID_NUMBER_REPRESENTATION);
+				default:
+					outFloat = res.Get();
+				}
 			}
 
 			// I always want the last parsed char to be a number
-			return i - 1;
+			return .Ok(i - 1);
 		}
 
-		private int ParseLiteral(String json, ref JSON_LITERAL outLiteral)
+		private Result<int, JSON_ERRORS> ParseLiteral(String json, ref JSON_LITERAL outLiteral)
 		{
 			var str = scope String();
 
@@ -217,15 +235,14 @@ namespace JSON_Beef
 			}
 			else
 			{
-				// Todo: Implement proper error mechanism
-				Console.Error.WriteLine("Error: Invalid literal value");
+				return .Err(.INVALID_LITERAL_VALUE);
 			}
 
 			// I always want the last parsed char to be a letter
-			return i - 1;
+			return .Ok(i - 1);
 		}
 
-		private int ParseArray(String json, ref JSONArray array)
+		private Result<int, JSON_ERRORS> ParseArray(String json, ref JSONArray array)
 		{
 			int i = 0;
 			JSON_TYPES typeParsed = JSON_TYPES.LITERAL;
@@ -238,7 +255,16 @@ namespace JSON_Beef
 				{
 					let str = scope String(&json[i]);
 					var outArr = scope JSONArray();
-					i += ParseArray(str, ref outArr);
+					let res = ParseArray(str, ref outArr);
+
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(err);
+					default:
+						i += res.Get();
+					}
+
 					array.Add(outArr);
 				}
 				else if (c == ']')
@@ -246,21 +272,38 @@ namespace JSON_Beef
 					break;
 				}
 				else if (c == '"')
- 				{
-					 // We do not want the first char in the string to parse to be taken as a
-					 // closing string token.
-					 i++;
-					 let str = scope String(&json[i]);
-					 var outStr = scope String();
-					 i += ParseString(str, outStr);
-					 array.Add(outStr);
+				{
+					// We do not want the first char in the string to parse to be taken as a
+					// closing string token.
+					i++;
+					let str = scope String(&json[i]);
+					var outStr = scope String();
+					let res = ParseString(str, outStr);
+
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(err);
+					default:
+						i += res.Get();
+					}
+
+					array.Add(outStr);
 				}
 				else if ((c == '-') || (c.IsNumber))
 				{
 					let str = scope String(&json[i]);
 					int outInt = 0;
 					float outFloat = 0.f;
-					i += ParseNumber(str, ref outInt, ref outFloat, ref typeParsed);
+					let res = ParseNumber(str, ref outInt, ref outFloat, ref typeParsed);
+
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(err);
+					default:
+						i += res.Get();
+					}
 
 					if (typeParsed == JSON_TYPES.INTEGER)
 					{
@@ -275,7 +318,15 @@ namespace JSON_Beef
 				{
 					let str = scope String(&json[i]);
 					JSON_LITERAL outLiteral = .NULL;
-					i += ParseLiteral(str, ref outLiteral);
+					let res = ParseLiteral(str, ref outLiteral);
+
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(err);
+					default:
+						i += res.Get();
+					}
 
 					typeParsed = .LITERAL;
 
@@ -286,15 +337,24 @@ namespace JSON_Beef
 					let str = scope String(&json[i]);
 					var outObject = scope JSONObject();
 
-					i += ParseObject(str, ref outObject);
+					let res = ParseObject(str, ref outObject);
+
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(err);
+					default:
+						i += res.Get();
+					}
+
 					array.Add(outObject);
 				}
 			}
 
-			return i;
+			return .Ok(i);
 		}
 
-		private int ParseObject(String json, ref JSONObject object)
+		private Result<int, JSON_ERRORS> ParseObject(String json, ref JSONObject object)
 		{
 			int i = 0;
 			var lookForKey = true;
@@ -311,7 +371,16 @@ namespace JSON_Beef
 					let str = scope String(&json[i]);
 					var outObject = scope JSONObject();
 
-					i += ParseObject(str, ref outObject);
+					let res = ParseObject(str, ref outObject);
+
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(err);
+					default:
+						i += res.Get();
+					}
+
 					object.Add(key, outObject);
 				}
 				else if (c == '}')
@@ -328,13 +397,31 @@ namespace JSON_Beef
 					if (lookForKey)
 					{
 						key = scope:: String();
-						i += ParseString(str, key);
+						let res = ParseString(str, key);
+
+						switch (res)
+						{
+						case .Err(let err):
+							return .Err(err);
+						default:
+							i += res.Get();
+						}
+
 						lookForKey = false;
 					}
 					else
 					{
 						var outStr = scope String();
-						i += ParseString(str, outStr);
+						let res = ParseString(str, outStr);
+
+						switch (res)
+						{
+						case .Err(let err):
+							return .Err(err);
+						default:
+							i += res.Get();
+						}
+
 						object.Add(key, outStr);
 					}
 				}
@@ -343,7 +430,15 @@ namespace JSON_Beef
 					let str = scope String(&json[i]);
 					var outInt = 0;
 					var outFloat = 0.f;
-					i += ParseNumber(str, ref outInt, ref outFloat, ref typeParsed);
+					let res = ParseNumber(str, ref outInt, ref outFloat, ref typeParsed);
+
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(err);
+					default:
+						i += res.Get();
+					}
 
 					if (typeParsed == JSON_TYPES.INTEGER)
 					{
@@ -359,7 +454,16 @@ namespace JSON_Beef
 					let str = scope String(&json[i]);
 					var outLiteral = JSON_LITERAL.NULL;
 
-					i += ParseLiteral(str, ref outLiteral);
+					let res = ParseLiteral(str, ref outLiteral);
+
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(err);
+					default:
+						i += res.Get();
+					}
+
 					object.Add(key, outLiteral);
 				}
 				else if (c == '[' && (!lookForKey))
@@ -368,7 +472,16 @@ namespace JSON_Beef
 					let str = scope String(&json[i]);
 					var outArr = scope JSONArray();
 
-					i += ParseArray(str, ref outArr);
+					let res = ParseArray(str, ref outArr);
+
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(err);
+					default:
+						i += res.Get();
+					}
+
 					object.Add(key, outArr);
 				}
 				else if (c == ',')
@@ -381,7 +494,7 @@ namespace JSON_Beef
 				}*/
 			}
 
-			return i;
+			return .Ok(i);
 		}
 	}
 }
