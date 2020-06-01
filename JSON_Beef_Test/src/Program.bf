@@ -20,6 +20,7 @@ namespace JSON_Beef_Test
 			TestJsonFileValidation();
 			TestJsonUtil();
 			TestJsonParsing();
+			TestJsonSerializing();
 
 			Console.WriteLine("Press any [enter] to exit.");
 			Console.In.Read();
@@ -119,11 +120,19 @@ namespace JSON_Beef_Test
 			{
 				Runtime.Assert(JSONValidator.IsValidJson(data), "Json file validation test #1 failed");
 			}
+			else
+			{
+				Runtime.Assert(false, "Failed loading array data");
+			}
 
 			gotData = GetValidObjectData(data);
 			if (gotData)
 			{
 				Runtime.Assert(JSONValidator.IsValidJson(data), "Json file validation test #2 failed");
+			}
+			else
+			{
+				Runtime.Assert(false, "Failed loading object data");
 			}
 
 			Console.WriteLine("Json file validation tests passed");
@@ -384,6 +393,27 @@ namespace JSON_Beef_Test
 			var isValidValue = (v.Get() == value);
 
 			return (isValidType && isValidValue);
+		}
+
+		static void TestJsonSerializing()
+		{
+			let author = scope Author("Jonathan", "Racaud", 25);
+			author.Book.Name = "The art of war";
+
+			let finalStr = "{\"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Book\":{\"Name\":\"The art of war\"}}";
+
+			let json = JSONSerializer.Serialize(author);
+
+			if (json != .Err)
+			{
+				let obj = json.Value;
+				let str = scope String();
+
+				obj.ToString(str);
+				Runtime.Assert(str.Equals(finalStr), "JSON Serializing failed #1");
+			}
+
+			delete json.Value;
 		}
 	}
 }

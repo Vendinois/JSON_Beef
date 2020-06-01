@@ -131,5 +131,10 @@ namespace JSON_Beef
 
 			return .Ok(Float.Parse(numStr));
 		}
+
+		public static JSON_LITERAL BoolToLiteral(bool b)
+		{
+			return (b) ? (JSON_LITERAL.TRUE) : (JSON_LITERAL.FALSE);
+		}
 	}
 }
