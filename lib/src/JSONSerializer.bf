@@ -30,7 +30,7 @@ namespace JSON_Beef
 			return .Ok(json);
 		}
 
-		public static Result<JSONArray> Serialize<T>(Object object) where T: JSONArray
+		public static Result<JSONArray> Serialize<T>(ref Object object) where T: JSONArray
 		{
 			if (!IsList(object) || (object == null))
 			{
@@ -38,9 +38,9 @@ namespace JSON_Beef
 			}
 
 			let jsonArray = new JSONArray();
-			List<Object> list = (List<Object>)object;
+			let list = (List<Object>*)&object;
 
-			for (var item in list)
+			for (var item in *list)
 			{
 				if (item == null)
 				{
@@ -48,7 +48,7 @@ namespace JSON_Beef
 				}
 				else if (IsList(item))
 				{
-					let res = Serialize<JSONArray>(item);
+					let res = Serialize<JSONArray>(ref item);
 
 					if (res == .Err)
 					{
@@ -60,16 +60,26 @@ namespace JSON_Beef
 				else
 				{
 					let itemType = item.GetType();
-					let itemFields = itemType.GetFields();
 
-					for (var field in itemFields)
+					switch (itemType)
 					{
-						if (ShouldIgnore(field))
+					case typeof(String):
+						jsonArray.Add(item as String);
+					case typeof(int):
+						jsonArray.Add((int)item);
+					case typeof(float):
+						jsonArray.Add((float)item);
+					case typeof(bool):
+						jsonArray.Add(JSONUtil.BoolToLiteral((bool)item));
+					default:
+						let res = Serialize<JSONObject>(item);
+
+						if (res == .Err)
 						{
-							continue;
+							return .Err;
 						}
 
-						SerializeArrayInternal(object, field, jsonArray);
+						jsonArray.Add(res.Get());
 					}
 				}
 			}
@@ -98,7 +108,7 @@ namespace JSON_Beef
 			let fieldName = scope String(field.Name);
 			let fieldVariant = field.GetValue(object).Get();
 			let fieldVariantType = fieldVariant.VariantType;
-			let fieldValue = fieldVariant.Get<Object>();
+			var fieldValue = fieldVariant.Get<Object>();
 
 			if (fieldValue == null)
 			{
@@ -106,7 +116,7 @@ namespace JSON_Beef
 			}
 			else if (IsList(fieldValue))
 			{
-				let res = Serialize<JSONArray>(fieldValue);
+				let res = Serialize<JSONArray>(ref fieldValue);
 
 				if (res == .Err)
 				{
@@ -148,7 +158,7 @@ namespace JSON_Beef
 		{
 			let fieldVariant = field.GetValue(object).Get();
 			let fieldVariantType = fieldVariant.VariantType;
-			let fieldValue = fieldVariant.Get<Object>();
+			var fieldValue = fieldVariant.Get<Object>();
 
 			if (fieldValue == null)
 			{
@@ -156,7 +166,7 @@ namespace JSON_Beef
 			}
 			else if (IsList(fieldValue))
 			{
-				let res = Serialize<JSONArray>(fieldValue);
+				let res = Serialize<JSONArray>(ref fieldValue);
 
 				if (res == .Err)
 				{

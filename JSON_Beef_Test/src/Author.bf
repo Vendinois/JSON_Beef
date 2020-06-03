@@ -9,16 +9,17 @@ namespace JSON_Beef_Test
 	{
 		public String FirstName;
 		public String LastName;
+
+		[IgnoreSerialize]
+		public int Age;
+
 	}
 
 	[Serializable]
 	public class Author: Person
 	{
-		//public List<Book> Books = new List<Book>() ~ DeleteContainerAndItems!(_);
-		public List<List<String>> Publishers = new List<List<String>>() ~ DeleteContainerAndItems!(_);
-
-		[IgnoreSerialize]
-		public int Age;
+		public List<Book> Books = new List<Book>() ~ DeleteContainerAndItems!(_);
+		public List<String> Publishers = new List<String>() ~ DeleteContainerAndItems!(_);
 
 		public this(String firstName = "", String lastName = "", int age = 0)
 		{
@@ -32,7 +33,6 @@ namespace JSON_Beef_Test
 	public class Book
 	{
 		public String Name;
-		public List<List<String>> Publishers = new List<List<String>>() ~ DeleteContainerAndItems!(_);
 
 		public this(String name)
 		{
