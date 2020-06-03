@@ -6,61 +6,191 @@ namespace JSON_Beef
 {
 	public class JSONSerializer
 	{
-		public static Result<JSONObject> Serialize(Object object)
+		public static Result<JSONObject> Serialize<T>(Object object) where T: JSONObject
 		{
+			if (object == null)
+			{
+				return .Err;
+			}
+
+			let json = new JSONObject();
 			let type = object.GetType();
 			var fields = type.GetFields();
 
-			let json = new JSONObject();
-
 			for (var field in fields)
 			{
-				let shouldIgnore = field.GetCustomAttribute<IgnoreSerializeAttribute>();
-				let isPrivate = field.HasFieldFlag(.PrivateScope);
-
-				if ((shouldIgnore == .Ok) || isPrivate)
+				if (ShouldIgnore(field))
 				{
 					continue;
 				}
 
-				let name = scope String(field.Name);
-				var value = field.GetValue(object).Get();
-				let valueType = value.VariantType;
+				SerializeObjectInternal(object, field, json);
+			}
 
-				if (valueType == null)
+			return .Ok(json);
+		}
+
+		public static Result<JSONArray> Serialize<T>(Object object) where T: JSONArray
+		{
+			if (!IsList(object) || (object == null))
+			{
+				return .Err;
+			}
+
+			let jsonArray = new JSONArray();
+			List<Object> list = (List<Object>)object;
+
+			for (var item in list)
+			{
+				if (item == null)
 				{
-					json.Add(name, JSON_LITERAL.NULL);
+					jsonArray.Add(JSON_LITERAL.NULL);
+				}
+				else if (IsList(item))
+				{
+					let res = Serialize<JSONArray>(item);
+
+					if (res == .Err)
+					{
+						return .Err;
+					}
+
+					jsonArray.Add(res.Get());
 				}
 				else
 				{
-					switch (valueType)
-					{
-					case typeof(String):
-						json.Add(name, value.Get<String>());
-					case typeof(int):
-						json.Add(name, value.Get<int>());
-					case typeof(float):
-						json.Add(name, value.Get<float>());
-					case typeof(bool):
-						json.Add(name, JSONUtil.BoolToLiteral(value.Get<bool>()));
-					case typeof(Array):
-						ThrowUnimplemented();
-					default:
-						let res = JSONSerializer.Serialize(value.Get<Object>());
+					let itemType = item.GetType();
+					let itemFields = itemType.GetFields();
 
-						if (res == .Err)
+					for (var field in itemFields)
+					{
+						if (ShouldIgnore(field))
 						{
-							delete json;
-							return .Err;
+							continue;
 						}
 
-						json.Add(name, res.Get());
-						delete res.Get();
+						SerializeArrayInternal(object, field, jsonArray);
 					}
 				}
 			}
 
-			return .Ok(json);
+			return .Ok(jsonArray);
+		}
+
+		private static bool IsList(Object object)
+		{
+			let type = object.GetType();
+			let typeName = scope String();
+			type.GetName(typeName);
+
+			return typeName.Equals("List");
+		}
+
+		private static bool ShouldIgnore(FieldInfo field)
+		{
+			let shouldIgnore = field.GetCustomAttribute<IgnoreSerializeAttribute>();
+
+			return ((shouldIgnore == .Ok) || field.HasFieldFlag(.PrivateScope) || field.HasFieldFlag(.Private));
+		}
+
+		private static Result<void> SerializeObjectInternal(Object object, FieldInfo field, JSONObject json)
+		{
+			let fieldName = scope String(field.Name);
+			let fieldVariant = field.GetValue(object).Get();
+			let fieldVariantType = fieldVariant.VariantType;
+			let fieldValue = fieldVariant.Get<Object>();
+
+			if (fieldValue == null)
+			{
+				json.Add(fieldName, JSON_LITERAL.NULL);
+			}
+			else if (IsList(fieldValue))
+			{
+				let res = Serialize<JSONArray>(fieldValue);
+
+				if (res == .Err)
+				{
+					return .Err;
+				}
+
+				json.Add(fieldName, res.Get());
+			}
+			else
+			{
+				switch (fieldVariantType)
+				{
+				case typeof(String):
+					json.Add(fieldName, (String)fieldValue);
+				case typeof(int):
+					json.Add(fieldName, (int)fieldValue);
+				case typeof(float):
+					json.Add(fieldName, (float)fieldValue);
+				case typeof(bool):
+					json.Add(fieldName, JSONUtil.BoolToLiteral((bool)fieldValue));
+				default:
+					let res = Serialize<JSONObject>(fieldValue);
+
+					if (res == .Err)
+					{
+						delete json;
+						return .Err;
+					}
+
+					json.Add(fieldName, res.Get());
+					delete res.Get();
+				}
+			}
+
+			return .Ok;
+		}
+
+		private static Result<void> SerializeArrayInternal(Object object, FieldInfo field, JSONArray json)
+		{
+			let fieldVariant = field.GetValue(object).Get();
+			let fieldVariantType = fieldVariant.VariantType;
+			let fieldValue = fieldVariant.Get<Object>();
+
+			if (fieldValue == null)
+			{
+				json.Add(JSON_LITERAL.NULL);
+			}
+			else if (IsList(fieldValue))
+			{
+				let res = Serialize<JSONArray>(fieldValue);
+
+				if (res == .Err)
+				{
+					return .Err;
+				}
+
+				json.Add(res.Get());
+			}
+			else
+			{
+				switch (fieldVariantType)
+				{
+				case typeof(String):
+					json.Add((String)fieldValue);
+				case typeof(int):
+					json.Add((int)fieldValue);
+				case typeof(float):
+					json.Add((float)fieldValue);
+				case typeof(bool):
+					json.Add(JSONUtil.BoolToLiteral((bool)fieldValue));
+				default:
+					let res = Serialize<JSONObject>(fieldValue);
+
+					if (res == .Err)
+					{
+						delete json;
+						return .Err;
+					}
+
+					json.Add(res.Get());
+					delete res.Get();
+				}
+			}
+			return .Ok;
 		}
 	}
 }

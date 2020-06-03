@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using JSON_Beef;
 
@@ -398,11 +399,25 @@ namespace JSON_Beef_Test
 		static void TestJsonSerializing()
 		{
 			let author = scope Author("Jonathan", "Racaud", 25);
-			author.Book.Name = "The art of war";
+			let publishers = new List<String>();
+			publishers.Add("BookPubli");
 
-			let finalStr = "{\"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Book\":{\"Name\":\"The art of war\"}}";
+			author.Publishers.Add(publishers);
+			/*author.Books.Add(new Book("The Art of War"));
+			author.Books.Add(new Book("Flowers for Algernon"));
+			author.Books.Add(new Book("Another book"));
 
-			let json = JSONSerializer.Serialize(author);
+			for (var book in author.Books)
+			{
+				let publishers = new List<String>();
+				publishers.Add("BookPubli");
+
+				book.Publishers.Add(publishers);
+			}*/
+
+			let finalStr = "{\"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}]}";
+
+			let json = JSONSerializer.Serialize<JSONObject>(author);
 
 			if (json != .Err)
 			{

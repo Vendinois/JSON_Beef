@@ -1,15 +1,21 @@
 using System;
+using System.Collections;
 using JSON_Beef;
 
 namespace JSON_Beef_Test
 {
 	[Serializable]
-	public class Author
+	public class Person
 	{
 		public String FirstName;
 		public String LastName;
-		public Book Book = new Book();
-		private int id;
+	}
+
+	[Serializable]
+	public class Author: Person
+	{
+		//public List<Book> Books = new List<Book>() ~ DeleteContainerAndItems!(_);
+		public List<List<String>> Publishers = new List<List<String>>() ~ DeleteContainerAndItems!(_);
 
 		[IgnoreSerialize]
 		public int Age;
@@ -20,16 +26,17 @@ namespace JSON_Beef_Test
 			LastName = lastName;
 			Age = age;
 		}
-
-		public ~this()
-		{
-			delete Book;
-		}
 	}
 
 	[Serializable]
 	public class Book
 	{
 		public String Name;
+		public List<List<String>> Publishers = new List<List<String>>() ~ DeleteContainerAndItems!(_);
+
+		public this(String name)
+		{
+			Name = name;
+		}
 	}
 }
