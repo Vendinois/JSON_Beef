@@ -62,7 +62,7 @@ namespace JSON_Beef
 						return .Err;
 					}
 
-					jsonArray.Add(res.Get());
+					jsonArray.Add(res.Value);
 				}
 				else
 				{
@@ -86,13 +86,47 @@ namespace JSON_Beef
 							return .Err;
 						}
 
-						jsonArray.Add(res.Get());
-						delete res.Get();
+						jsonArray.Add(res.Value);
+						delete res.Value;
 					}
 				}
 			}
 
 			return .Ok(jsonArray);
+		}
+
+		public static Result<String> Serialize<T>(Object object) where T: String
+		{
+			let str = new String();
+
+			if (IsList(object))
+			{
+				var obj = object;
+				let res = Serialize<JSONArray>(ref obj);
+
+				if (res == .Err)
+				{
+					delete str;
+					return .Err;
+				}
+
+				res.Value.ToString(str);
+				delete res.Value;
+			}
+			else
+			{
+				let res = Serialize<JSONObject>(object);
+
+				if (res == .Err)
+				{
+					delete str;
+					return .Err;
+				}
+
+				res.Value.ToString(str);
+				delete res.Value;
+			}
+			return .Ok(str);
 		}
 
 		private static bool IsList(Object object)
@@ -135,8 +169,8 @@ namespace JSON_Beef
 					return .Err;
 				}
 
-				json.Add(fieldName, res.Get());
-				delete res.Get();
+				json.Add(fieldName, res.Value);
+				delete res.Value;
 			}
 			else
 			{
@@ -159,8 +193,8 @@ namespace JSON_Beef
 						return .Err;
 					}
 
-					json.Add(fieldName, res.Get());
-					delete res.Get();
+					json.Add(fieldName, res.Value);
+					delete res.Value;
 				}
 			}
 
@@ -215,8 +249,8 @@ namespace JSON_Beef
 						return .Err;
 					}
 
-					json.Add(fieldName, res.Get());
-					delete res.Get();
+					json.Add(fieldName, res.Value);
+					delete res.Value;
 				}
 				else
 				{
@@ -239,8 +273,8 @@ namespace JSON_Beef
 							return .Err;
 						}
 
-						json.Add(fieldName, res.Get());
-						delete res.Get();
+						json.Add(fieldName, res.Value);
+						delete res.Value;
 					}
 				}
 			}
@@ -267,8 +301,8 @@ namespace JSON_Beef
 					return .Err;
 				}
 
-				json.Add(res.Get());
-				delete res.Get();
+				json.Add(res.Value);
+				delete res.Value;
 			}
 			else
 			{
@@ -291,8 +325,8 @@ namespace JSON_Beef
 						return .Err;
 					}
 
-					json.Add(res.Get());
-					delete res.Get();
+					json.Add(res.Value);
+					delete res.Value;
 				}
 			}
 			return .Ok;
