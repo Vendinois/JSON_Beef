@@ -87,6 +87,7 @@ namespace JSON_Beef
 						}
 
 						jsonArray.Add(res.Get());
+						delete res.Get();
 					}
 				}
 			}
@@ -135,6 +136,7 @@ namespace JSON_Beef
 				}
 
 				json.Add(fieldName, res.Get());
+				delete res.Get();
 			}
 			else
 			{
@@ -214,6 +216,7 @@ namespace JSON_Beef
 					}
 
 					json.Add(fieldName, res.Get());
+					delete res.Get();
 				}
 				else
 				{
@@ -265,6 +268,7 @@ namespace JSON_Beef
 				}
 
 				json.Add(res.Get());
+				delete res.Get();
 			}
 			else
 			{

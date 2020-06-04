@@ -18,7 +18,7 @@ namespace JSON_Beef_Test
 	[Serializable]
 	public class Author: Person
 	{
-		public List<Book> Books = new List<Book>() ~ delete _;
+		public List<Book> Books = new List<Book>() ~ DeleteContainerAndItems!(_);
 		public List<String> Publishers = new List<String>() ~ delete _;
 
 		public this(String firstName = "", String lastName = "", int age = 0)

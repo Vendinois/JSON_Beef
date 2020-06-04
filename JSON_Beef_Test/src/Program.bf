@@ -408,18 +408,18 @@ namespace JSON_Beef_Test
 
 			let finalStr = "{\"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
 
-			let json = JSONSerializer.Serialize<JSONObject>(author);
+			let res = JSONSerializer.Serialize<JSONObject>(author);
 
-			if (json != .Err)
+			if (res != .Err)
 			{
-				let obj = json.Value;
+				let json = res.Value;
 				let str = scope String();
 
-				obj.ToString(str);
+				json.ToString(str);
 				Runtime.Assert(str.Equals(finalStr), "JSON Serializing failed #1");
-			}
 
-			//delete json.Value;
+				delete json;
+			}
 		}
 	}
 }
