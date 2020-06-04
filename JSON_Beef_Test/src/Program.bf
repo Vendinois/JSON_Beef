@@ -406,7 +406,7 @@ namespace JSON_Beef_Test
 			author.Books.Add(new Book("Flowers for Algernon"));
 			author.Books.Add(new Book("Another book"));
 
-			let finalStr = "{\"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}]}";
+			let finalStr = "{\"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
 
 			let json = JSONSerializer.Serialize<JSONObject>(author);
 
@@ -419,7 +419,7 @@ namespace JSON_Beef_Test
 				Runtime.Assert(str.Equals(finalStr), "JSON Serializing failed #1");
 			}
 
-			delete json.Value;
+			//delete json.Value;
 		}
 	}
 }
