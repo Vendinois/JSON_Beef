@@ -12,7 +12,6 @@ namespace JSON_Beef_Test
 
 		[IgnoreSerialize]
 		public int Age;
-
 	}
 
 	[Serializable]
@@ -34,7 +33,7 @@ namespace JSON_Beef_Test
 	{
 		public String Name;
 
-		public this(String name)
+		public this(String name = "")
 		{
 			Name = name;
 		}

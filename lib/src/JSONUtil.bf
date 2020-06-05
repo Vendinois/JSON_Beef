@@ -136,5 +136,15 @@ namespace JSON_Beef
 		{
 			return (b) ? (JSON_LITERAL.TRUE) : (JSON_LITERAL.FALSE);
 		}
+
+		public static Result<bool, JSON_ERRORS> LiteralToBool(JSON_LITERAL l)
+		{
+			if (l == .NULL)
+			{
+				return .Err(.INVALID_LITERAL_VALUE);
+			}
+
+			return (l == .TRUE) ? (true) : (false);
+		}
 	}
 }

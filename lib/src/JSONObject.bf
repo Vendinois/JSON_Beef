@@ -74,6 +74,24 @@ namespace JSON_Beef
 			return .Err(.KEY_NOT_FOUND);
 		}
 
+		public Result<Object, JSON_ERRORS> Get(String key, Type type)
+		{
+			if (dictionary.ContainsKey(key))
+			{
+				let value = dictionary[key];
+
+				if (value.VariantType == type)
+				{
+					let ret = value.Get<Object>();
+					return .Ok(ret);
+				}
+
+				return .Err(.INVALID_TYPE);
+			}
+
+			return .Err(.KEY_NOT_FOUND);
+		}
+
 		public Variant GetVariant(String key)
 		{
 			return dictionary[key];
