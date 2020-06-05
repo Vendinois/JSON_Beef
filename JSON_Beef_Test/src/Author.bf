@@ -38,5 +38,15 @@ namespace JSON_Beef_Test
 		{
 			Name = name;
 		}
+
+		public static bool operator==(Book a, Book b)
+		{
+			return a.Name.Equals(b.Name);
+		}
+
+		public static bool operator!=(Book a, Book b)
+		{
+			return !(a == b);
+		}
 	}
 }

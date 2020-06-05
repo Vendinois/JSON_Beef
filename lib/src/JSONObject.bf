@@ -67,6 +67,8 @@ namespace JSON_Beef
 					T ret = value.Get<T>();
 					return .Ok(ret);
 				}
+
+				return .Err(.INVALID_TYPE);
 			}
 
 			return .Err(.KEY_NOT_FOUND);
@@ -75,6 +77,46 @@ namespace JSON_Beef
 		public Variant GetVariant(String key)
 		{
 			return dictionary[key];
+		}
+
+		public bool Contains<T>(String key)
+		{
+			if (!dictionary.ContainsKey(key))
+			{
+				return false;
+			}
+
+			let variant = GetVariant(key);
+
+			switch (typeof(T))
+			{
+			case typeof(bool):
+				return ((variant.VariantType == typeof(JSON_LITERAL)) && (variant.Get<JSON_LITERAL>() != .NULL));
+			case variant.VariantType:
+				return true;
+			default:
+				return false;
+			}
+		}
+
+		public bool Contains(String key, Type type)
+		{
+			if (!dictionary.ContainsKey(key))
+			{
+				return false;
+			}
+
+			let variant = GetVariant(key);
+
+			switch (type)
+			{
+			case typeof(bool):
+				return ((variant.VariantType == typeof(JSON_LITERAL)) && (variant.Get<JSON_LITERAL>() != .NULL));
+			case variant.VariantType:
+				return true;
+			default:
+				return false;
+			}
 		}
 
 		public void Add(String key, String val)

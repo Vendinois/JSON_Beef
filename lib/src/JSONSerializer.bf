@@ -206,12 +206,6 @@ namespace JSON_Beef
 			let type = object.GetType();
 			let baseType = type.BaseType;
 
-			let typeStr = scope String();
-			let baseTypeStr = scope String();
-			type.GetName(typeStr);
-			baseType.GetName(baseTypeStr);
-			
-
 			// It is not an error to have the same base type as the current type.
 			// It only tells that we arrived at the top of the inheritence chain.
 			// So I exit now to break any infinite recursion loop.

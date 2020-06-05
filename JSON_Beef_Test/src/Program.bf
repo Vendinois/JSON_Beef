@@ -22,6 +22,7 @@ namespace JSON_Beef_Test
 			TestJsonUtil();
 			TestJsonParsing();
 			TestJsonSerializing();
+			TestJsonDeserializing();
 
 			Console.WriteLine("Press any [enter] to exit.");
 			Console.In.Read();
@@ -428,6 +429,68 @@ namespace JSON_Beef_Test
 				Runtime.Assert(resStr.Value.Equals(finalStr), "JSON Serializing failed #1");
 				delete resStr.Value;
 			}
+
+			Console.WriteLine("JSONSerializing tests passed");
+		}
+
+		static void TestJsonDeserializing()
+		{
+			let json = "{\"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
+			let author = scope Author("Jonathan", "Racaud", 25);
+			author.Publishers.Add("GoldenBooks");
+			author.Publishers.Add("AncientBooks");
+			author.Publishers.Add("NewBooks");
+			author.Books.Add(new Book("The Art of War"));
+			author.Books.Add(new Book("Flowers for Algernon"));
+			author.Books.Add(new Book("Another book"));
+
+			let res = JSONDeserializer.Deserialize<Author>(json);
+
+			switch (res)
+			{
+			case .Err(let err):
+				Runtime.Assert(false, "JSON Deserializing failed #1");
+			case .Ok(let parsedObj):
+				Runtime.Assert(ObjectsMatch(author, parsedObj));
+			}
+
+			Console.WriteLine("JSONDeserializing tests passed");
+		}
+
+		static bool ObjectsMatch(Author a, Author b)
+		{
+			if ((a.FirstName != b.FirstName) || ((a.LastName != b.LastName)) || (a.Publishers.Count != b.Publishers.Count) || (a.Books.Count != b.Books.Count))
+			{
+				return false;
+			}
+
+			var missingBooks = a.Books.Count;
+			for (int i = 0; i < a.Books.Count; i++)
+			{
+				for (int j = 0; j < b.Books.Count; j++)
+				{
+					if (b.Books[j] == a.Books[i])
+					{
+						missingBooks--;
+						break;
+					}
+				}
+			}
+
+			var missingPublishers = a.Publishers.Count;
+			for (int i = 0; i < a.Publishers.Count; i++)
+			{
+				for (int j = 0; j < b.Publishers.Count; j++)
+				{
+					if (b.Publishers[j] == a.Publishers[i])
+					{
+						missingPublishers--;
+						break;
+					}
+				}
+			}
+
+			return ((missingBooks != 0) || (missingPublishers != 0));
 		}
 	}
 }
