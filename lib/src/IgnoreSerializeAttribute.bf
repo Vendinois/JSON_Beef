@@ -2,14 +2,15 @@ using System;
 
 namespace JSON_Beef
 {
-	[AttributeUsage(.Field | .Property | .Class | .Struct, .ReflectAttribute, ReflectUser=.All)]
+	[AttributeUsage(.Field | .Property, .ReflectAttribute, ReflectUser=.All)]
 	public struct IgnoreSerializeAttribute: Attribute
 	{
 	}
 
-	[AttributeUsage(.Class | .Struct, .ReflectAttribute | .AlwaysIncludeTarget, ReflectUser=.All)]
+	[AttributeUsage(.Class, ReflectUser=.All),
+		AlwaysInclude(AssumeInstantiated=true),
+		Reflect]
 	public struct SerializableAttribute: Attribute
 	{
-
 	}
 }

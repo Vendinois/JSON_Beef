@@ -146,14 +146,13 @@ namespace JSON_Beef
 		private static Result<void, DESERIALIZE_ERRORS> ParseField(JSONObject jsonObj, Object obj, FieldInfo field)
 		{
 			let fieldName = scope String(field.Name);
-			let fieldVariant = field.GetValue(obj).Value;
-			let fieldType = fieldVariant.VariantType;
-			let fieldValue = fieldVariant.Get<Object>();
+			let fieldType = field.FieldType;
 
 			var valueSet = Result<void, FieldInfo.Error>();
 
-			if (IsList(fieldValue))
+			if (IsList(fieldType))
 			{
+				let fieldValue = field.GetValue(obj).Value.Get<Object>();
 				if (fieldValue == null)
 				{
 					return .Err(.CANNOT_ASSIGN_VALUE);
@@ -180,6 +179,9 @@ namespace JSON_Beef
 				for (int i = 0; i < jsonArray.Count; i++)
 				{
 					let variant = jsonArray.GetVariant(i);
+					//let fieldValue = field.GetValue(obj).Value.Get<Object>();
+					//let fieldType = fieldVariant.VariantType;
+					//let fieldValue = fieldVariant.Get<Object>();
 
 					switch (variant.VariantType)
 					{
@@ -220,20 +222,33 @@ namespace JSON_Beef
 					case typeof(JSONObject):
 						let val = variant.Get<JSONObject>();
 
+						// The field I'm inspecting is of type List<Book>
 						let generic = fieldType as SpecializedGenericType;
 						let genericType = generic.GetGenericArg(0) as TypeInstance;
-						genericType.CreateObject();
 
-						//var innerObj = genericType.CreateObject();
-						/*let ret = DeserializeObjectInternal(val, innerObj.Get());
+						// This is to check when debugging that the right type is retrieved
+						let typeName = scope String();
+						genericType.GetFullName(typeName);
+
+						// Fails because mTypeClassVData == null
+						var innerObjRes = genericType.CreateObject();
+
+						if (innerObjRes == .Err)
+						{
+							return .Err(.CANNOT_ASSIGN_VALUE);
+						}
+
+						var innerObj = innerObjRes.Value;
+						let ret = DeserializeObjectInternal(val, innerObj);
 
 						switch (ret)
 						{
 						case .Err(let err):
 							return .Err(.ERROR_PARSING);
 						case .Ok:
-							break;
-						}*/
+							let fType = innerObj.GetType() as TypeInstance;
+							fieldType.GetMethod("Add").Get().Invoke(fieldValue, innerObj);
+						}
 					}
 				}
 			}
@@ -386,6 +401,14 @@ namespace JSON_Beef
 		private static bool IsList(Object object)
 		{
 			let type = object.GetType();
+			let typeName = scope String();
+			type.GetName(typeName);
+
+			return typeName.Equals("List");
+		}
+
+		private static bool IsList(Type type)
+		{
 			let typeName = scope String();
 			type.GetName(typeName);
 

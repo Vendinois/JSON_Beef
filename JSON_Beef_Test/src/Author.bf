@@ -33,7 +33,7 @@ namespace JSON_Beef_Test
 	{
 		public String Name;
 
-		public this(String name = "")
+		public this(String name = "Book")
 		{
 			Name = name;
 		}
