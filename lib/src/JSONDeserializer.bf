@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Reflection;
 using JSON_Beef;
 
@@ -246,7 +247,10 @@ namespace JSON_Beef
 						case .Err(let err):
 							return .Err(.ERROR_PARSING);
 						case .Ok:
-							let fType = innerObj.GetType() as TypeInstance;
+							// GetMethod will never return a valid value because:
+							// 1. List's method are not discoverable by reflection
+							// 2. The method's implementation is not working properly. It always
+							// returns .NoResults
 							fieldType.GetMethod("Add").Get().Invoke(fieldValue, innerObj);
 						}
 					}

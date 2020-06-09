@@ -1,5 +1,5 @@
 FileVersion = 1
-Dependencies = {corlib = "*", corlib = "*"}
+Dependencies = {corlib = "*", corlib = "*", BeefExtensionsLib = "*"}
 
 [Project]
 Name = "JSON_Beef"

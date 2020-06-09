@@ -4,7 +4,8 @@ using JSON_Beef;
 
 namespace JSON_Beef_Test
 {
-	[Serializable]
+	[AlwaysInclude(AssumeInstantiated=true, IncludeAllMethods=true)]
+	[Reflect]
 	public class Person
 	{
 		public String FirstName;
@@ -14,7 +15,8 @@ namespace JSON_Beef_Test
 		public int Age;
 	}
 
-	[Serializable]
+	[AlwaysInclude(AssumeInstantiated=true, IncludeAllMethods=true)]
+	[Reflect]
 	public class Author: Person
 	{
 		public List<Book> Books = new List<Book>() ~ DeleteContainerAndItems!(_);
@@ -28,7 +30,8 @@ namespace JSON_Beef_Test
 		}
 	}
 
-	[Serializable]
+	[AlwaysInclude(AssumeInstantiated=true, IncludeAllMethods=true)]
+	[Reflect]
 	public class Book
 	{
 		public String Name;
@@ -36,6 +39,11 @@ namespace JSON_Beef_Test
 		public this(String name = "Book")
 		{
 			Name = name;
+		}
+
+		public void Test()
+		{
+
 		}
 
 		public static bool operator==(Book a, Book b)
