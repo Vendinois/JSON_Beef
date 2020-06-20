@@ -490,7 +490,7 @@ namespace JSON_Beef_Test
 				}
 			}
 
-			return ((missingBooks != 0) || (missingPublishers != 0));
+			return ((missingBooks == 0) && (missingPublishers == 0));
 		}
 	}
 }
