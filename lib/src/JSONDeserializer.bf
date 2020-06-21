@@ -251,7 +251,15 @@ namespace JSON_Beef
 							// 1. List's method are not discoverable by reflection
 							// 2. The method's implementation is not working properly. It always
 							// returns .NoResults
-							fieldType.GetMethod("Add").Get().Invoke(fieldValue, innerObj);
+							var addMethodRes = fieldType.GetMethod("Add", .ExactBinding);
+
+							switch (addMethodRes)
+							{
+							case .Ok(let method):
+								method.Invoke(fieldValue, innerObj);
+							case .Err(let err):
+								return .Err(.CANNOT_ASSIGN_VALUE);
+							}
 						}
 					}
 				}
@@ -408,7 +416,7 @@ namespace JSON_Beef
 			let typeName = scope String();
 			type.GetName(typeName);
 
-			return typeName.Equals("List");
+			return typeName.Equals("JsonList");
 		}
 
 		private static bool IsList(Type type)
@@ -416,7 +424,7 @@ namespace JSON_Beef
 			let typeName = scope String();
 			type.GetName(typeName);
 
-			return typeName.Equals("List");
+			return typeName.Equals("JsonList");
 		}
 
 		private static bool HasField(JSONObject jsonObj, Object obj, FieldInfo field)

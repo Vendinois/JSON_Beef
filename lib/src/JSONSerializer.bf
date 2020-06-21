@@ -135,7 +135,7 @@ namespace JSON_Beef
 			let typeName = scope String();
 			type.GetName(typeName);
 
-			return typeName.Equals("List");
+			return typeName.Equals("List") || typeName.Equals("JsonList");
 		}
 
 		private static bool ShouldIgnore(FieldInfo field)

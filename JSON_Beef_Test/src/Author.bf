@@ -19,8 +19,8 @@ namespace JSON_Beef_Test
 	[Reflect]
 	public class Author: Person
 	{
-		public List<Book> Books = new List<Book>() ~ DeleteContainerAndItems!(_);
-		public List<String> Publishers = new List<String>() ~ delete _;
+		public JsonList<Book> Books = new JsonList<Book>() ~ DeleteContainerAndItems!(_);
+		public JsonList<String> Publishers = new JsonList<String>() ~ delete _;
 
 		public this(String firstName = "", String lastName = "", int age = 0)
 		{
