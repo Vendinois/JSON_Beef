@@ -40,6 +40,7 @@ JSON_Beef consists of several objects to manipulate JSON data:
 - JSONUtil: Utility class for working with certain aspect of the JSON specification.
 - JSONSerializer: Class serializing an Object into either a **JSONObject** a **JSONArray** or **String** object.
 - JSONDeserializer: Class deserializing a JSON String into an Object of the specified type **(Work in progress)**
+- JsonList<T>: Class inheriting from List<T> to allow Deserialization of JSON Lists into a List<T> like class. This class does not provided more methods than a List<T>. Its only use is for being able to find the *Add* method through reflection.
 
 **Validating a JSON String:**
 ```c#
@@ -111,6 +112,10 @@ Now you can deserialize a JSON string into your CustomClass using JSONDeserializ
 ```c#
 let customClass = JSONDeserializer.Deserialize<CustomClass>(json);
 ```
+
+Due to a limitation with the Beef language that do not provide by default reflection for the List<T> type nor a way to add it without modifying the language (from my knowledge), you need to use the JsonList<T> type which is a thin wrapper around the List<T> type providing the necessary reflection capabilities for the Deserialization to work with Lists.
+
+In the future, if the language allows reflection for its List<T> type, then the JsonList class shall be removed.
 
 For more examples about how to use the library you can look at the JSON_Beef_Test project.
 
