@@ -120,8 +120,8 @@ In the future, if the language allows reflection for its List<T> type, then the 
 For more examples about how to use the library you can look at the JSON_Beef_Test project.
 
 ## Important notes
-- The JSON_Beef library can only serialize ```List<T>``` types into JSONArray and only deserialize a JSON array into a ```List<T>```.
-- Because the ```List<T>``` type does not provides its method through reflection, the JSONDeserializer cannot successfully deserialize a JSON Array into its corresponding field of type ```List<T>```.
+- The JSON_Beef library can only serialize ```List<T>``` or ```JsonList<T>``` types into JSONArray and only deserialize a JSON array into a ```JsonList<T>```.
+- Because the ```List<T>``` type does not provides its method through reflection, the JSONDeserializer cannot successfully deserialize a JSON Array into its corresponding field of type ```List<T>```. While waiting for a better way of doing it, the ```JsonList<T>``` has been added. See the issue [Working with lists](https://github.com/Jonathan-Racaud/JSON_Beef/issues/2) for more information.
 - When deserializing into a user defined type, the keys inside the JSON object string representation must match the field's name as declared (case sensitive):
 
 ```c#
