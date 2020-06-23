@@ -130,6 +130,10 @@ namespace JSON_Beef
 				isValid = false;
 				return 0;
 			}
+			else if (json[i].IsNumber)
+			{
+				gotDigit = true;
+			}
 
 			for (i = 1; i < json.Length; i++)
 			{
