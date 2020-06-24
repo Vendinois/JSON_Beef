@@ -23,7 +23,7 @@ namespace JSON_Beef_Test
 			TestJsonFileValidation();
 			TestJsonUtil();
 			TestJsonParsing();
-			TestJsonSerializing();
+			//TestJsonSerializing();
 			TestJsonDeserializing();
 
 			Console.WriteLine("Press any [enter] to exit.");
@@ -437,7 +437,7 @@ namespace JSON_Beef_Test
 
 		static void TestJsonDeserializing()
 		{
-			let json = "{\"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
+			let json = "{\"Id\": 42, \"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
 			let author = scope Author("Jonathan", "Racaud", 25);
 			author.Publishers.Add("GoldenBooks");
 			author.Publishers.Add("AncientBooks");

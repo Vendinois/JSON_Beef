@@ -268,8 +268,28 @@ namespace JSON_Beef
 			{
 				switch (fieldType)
 				{
-				case typeof(String), typeof(int), typeof(float):
+				case typeof(String):
 					let res = jsonObj.Get(fieldName, fieldType);
+
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(.ERROR_PARSING);
+					case .Ok(let val):
+						valueSet = field.SetValue(obj, val);
+					}
+				case typeof(int), typeof(int8), typeof(int16), typeof(int32), typeof(int64), typeof(uint), typeof(uint8), typeof(uint16), typeof(uint32), typeof(uint64):
+					let res = jsonObj.Get<int>(fieldName);
+
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(.ERROR_PARSING);
+					case .Ok(let val):
+						valueSet = field.SetValue(obj, val);
+					}
+				case typeof(float), typeof(double):
+					let res = jsonObj.Get<float>(fieldName);
 
 					switch (res)
 					{
@@ -432,29 +452,37 @@ namespace JSON_Beef
 			let fieldName = scope String(field.Name);
 			let fieldVariant = field.GetValue(obj).Value;
 			let fieldVariantType = fieldVariant.VariantType;
-			let fieldValue = fieldVariant.Get<Object>();
 
-			if (IsList(fieldValue))
+			switch (fieldVariantType)
 			{
-				if (!IsNullOrJSONArray(jsonObj, fieldName))
+			case typeof(String), typeof(bool):
+				if (!jsonObj.Contains(fieldName, fieldVariantType))
 				{
 					return false;
 				}
-			}
-			else
-			{
-				switch (fieldVariantType)
+			case typeof(int), typeof(int8), typeof(int16), typeof(int32), typeof(int64), typeof(uint), typeof(uint8), typeof(uint16), typeof(uint32), typeof(uint64):
+				if (!jsonObj.Contains(fieldName, typeof(int)))
 				{
-				case typeof(String), typeof(int), typeof(bool), typeof(float):
-					if (!jsonObj.Contains(fieldName, fieldVariantType))
+					return false;
+				}
+			case typeof(float), typeof(double):
+				if (!jsonObj.Contains(fieldName, typeof(float)))
+				{
+					return false;
+				}
+			default:
+				let fieldValue = fieldVariant.Get<Object>();
+
+				if (IsList(fieldValue))
+				{
+					if (!IsNullOrJSONArray(jsonObj, fieldName))
 					{
 						return false;
 					}
-				default:
-					if (!IsNullOrJSONObject(jsonObj, fieldName))
-					{
-						return false;
-					}
+				}
+				else if (!IsNullOrJSONObject(jsonObj, fieldName))
+				{
+					return false;
 				}
 			}
 			return true;
