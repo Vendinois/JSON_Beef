@@ -21,6 +21,7 @@ namespace JSON_Beef_Test
 	{
 		public int Id;
 		public float Test;
+		public bool Known;
 		public JsonList<Book> Books = new JsonList<Book>() ~ DeleteContainerAndItems!(_);
 		public JsonList<String> Publishers = new JsonList<String>() ~ delete _;
 

@@ -17,7 +17,7 @@ namespace JSON_Beef
 			INVALID_FIELD_TYPE
 		}
 
-		public static Result<T, DESERIALIZE_ERRORS> Deserialize<T>(String json) where T: new
+		public static Result<T, DESERIALIZE_ERRORS> Deserialize<T>(String json) where T: new, delete
 		{
 			if (!JSONValidator.IsValidJson(json))
 			{
@@ -36,12 +36,14 @@ namespace JSON_Beef
 			case .OBJECT:
 				res = DeserializeObjectInternal(json, finalObj);
 			case .UNKNOWN:
+				delete finalObj;
 				return .Err(.ERROR_PARSING);
 			}
 
 			switch (res)
 			{
 			case .Err(let err):
+				delete finalObj;
 				return .Err(err);
 			case .Ok:
 				return .Ok(finalObj);
@@ -194,7 +196,15 @@ namespace JSON_Beef
 						{
 							return .Err(.CANNOT_ASSIGN_VALUE);
 						}
-						valueSet = field.SetValue(obj, val);
+
+						if (JSONUtil.LiteralToBool(val) case .Ok(let v))
+						{
+							valueSet = field.SetValue(obj, v);
+						}
+						else
+						{
+							return .Err(.CANNOT_ASSIGN_VALUE);
+						}
 					}
 				default:
 					return .Err(.ERROR_PARSING);

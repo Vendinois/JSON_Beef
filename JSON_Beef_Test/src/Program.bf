@@ -427,10 +427,17 @@ namespace JSON_Beef_Test
 
 				json.ToString(str);
 
-				let deserializedAuthor = JSONDeserializer.Deserialize<Author>(str).Value;
-				Runtime.Assert(ObjectsMatch(author, deserializedAuthor), "JSON Serializing failed #1");
+				let deserializedAuthor = JSONDeserializer.Deserialize<Author>(str);
 
-				delete deserializedAuthor;
+				switch (deserializedAuthor)
+				{
+				case .Err(let err):
+					Runtime.Assert(false, "JSON Serializing failed #1");
+				case .Ok(let val):
+					Runtime.Assert(ObjectsMatch(author, deserializedAuthor), "JSON Serializing failed #2");
+					delete deserializedAuthor.Value;
+				}
+
 				delete json;
 			}
 
@@ -449,10 +456,11 @@ namespace JSON_Beef_Test
 
 		static void TestJsonDeserializing()
 		{
-			let json = "{\"Id\": 256, \"Test\": 4.2, \"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
+			let json = "{\"Id\": 256, \"Test\": 4.2, \"Known\": false, \"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
 			let author = scope Author("Jonathan", "Racaud", 25);
 			author.Id = 256;
 			author.Test = 4.2f;
+			author.Known = false;
 			author.Publishers.Add("GoldenBooks");
 			author.Publishers.Add("AncientBooks");
 			author.Publishers.Add("NewBooks");
@@ -481,7 +489,8 @@ namespace JSON_Beef_Test
 				(a.Publishers.Count != b.Publishers.Count) ||
 				(a.Books.Count != b.Books.Count) ||
 				(a.Id != b.Id) ||
-				!DoubleEquals(a.Test, b.Test))
+				!DoubleEquals(a.Test, b.Test) ||
+				(a.Known != b.Known))
 			{
 				return false;
 			}
