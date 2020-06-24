@@ -150,51 +150,63 @@ namespace JSON_Beef
 			let fieldName = scope String(field.Name);
 			let fieldVariant = field.GetValue(object).Get();
 			let fieldVariantType = fieldVariant.VariantType;
-			var fieldValue = fieldVariant.Get<Object>();
 
-			if (fieldValue == null)
-			{
-				json.Add(fieldName, JSON_LITERAL.NULL);
-				return .Ok;
-			}
-
-			SerializeObjectBaseTypeInternal(fieldValue, json);
-
-			if (IsList(fieldValue))
-			{
-				let res = Serialize<JSONArray>(ref fieldValue);
-
-				if (res == .Err)
-				{
-					return .Err;
-				}
-
-				json.Add(fieldName, res.Value);
-				delete res.Value;
-			}
-			else
+			if (fieldVariantType.IsPrimitive)
 			{
 				switch (fieldVariantType)
 				{
-				case typeof(String):
-					json.Add(fieldName, (String)fieldValue);
 				case typeof(int):
-					json.Add(fieldName, (int)fieldValue);
+					json.Add(fieldName, fieldVariant.Get<int>());
 				case typeof(float):
-					json.Add(fieldName, (float)fieldValue);
+					json.Add(fieldName, fieldVariant.Get<float>());
 				case typeof(bool):
-					json.Add(fieldName, JSONUtil.BoolToLiteral((bool)fieldValue));
+					json.Add(fieldName, JSONUtil.BoolToLiteral((bool)fieldVariant.Get<bool>()));
 				default:
-					let res = Serialize<JSONObject>(fieldValue);
+					return .Err;
+				}
+			}
+			else if (fieldVariantType.IsObject)
+			{
+				var fieldValue = fieldVariant.Get<Object>();
+
+				if (fieldValue == null)
+				{
+					json.Add(fieldName, JSON_LITERAL.NULL);
+					return .Ok;
+				}
+
+				SerializeObjectBaseTypeInternal(fieldValue, json);
+
+				if (IsList(fieldValue))
+				{
+					let res = Serialize<JSONArray>(ref fieldValue);
 
 					if (res == .Err)
 					{
-						delete json;
 						return .Err;
 					}
 
 					json.Add(fieldName, res.Value);
 					delete res.Value;
+				}
+				else
+				{
+					switch (fieldVariantType)
+					{
+					case typeof(String):
+						json.Add(fieldName, (String)fieldValue);
+					default:
+						let res = Serialize<JSONObject>(fieldValue);
+
+						if (res == .Err)
+						{
+							delete json;
+							return .Err;
+						}
+
+						json.Add(fieldName, res.Value);
+						delete res.Value;
+					}
 				}
 			}
 

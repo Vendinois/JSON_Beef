@@ -97,14 +97,22 @@ namespace JSON_Beef
 		public Result<JSONArray, JSON_ERRORS> ParseArray(String json)
 		{
 			var array = new JSONArray();
-			ParseArray(json, ref array);
+			if (ParseArray(json, ref array) case .Err(let err))
+			{
+				delete array;
+				return .Err(err);
+			}
 			return array;
 		}
 
 		public Result<JSONObject, JSON_ERRORS> ParseObject(String json)
 		{
 			var object = new JSONObject();
-			ParseObject(json, ref object);
+			if (ParseObject(json, ref object) case .Err(let err))
+			{
+				delete object;
+				return .Err(err);
+			}
 			return object;
 		}
 

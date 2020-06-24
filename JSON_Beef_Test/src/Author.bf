@@ -19,7 +19,8 @@ namespace JSON_Beef_Test
 	[Reflect]
 	public class Author: Person
 	{
-		public uint64 Id;
+		public int Id;
+		public float Test;
 		public JsonList<Book> Books = new JsonList<Book>() ~ DeleteContainerAndItems!(_);
 		public JsonList<String> Publishers = new JsonList<String>() ~ delete _;
 

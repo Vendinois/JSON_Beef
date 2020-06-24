@@ -23,7 +23,7 @@ namespace JSON_Beef_Test
 			TestJsonFileValidation();
 			TestJsonUtil();
 			TestJsonParsing();
-			//TestJsonSerializing();
+			TestJsonSerializing();
 			TestJsonDeserializing();
 
 			Console.WriteLine("Press any [enter] to exit.");
@@ -238,6 +238,11 @@ namespace JSON_Beef_Test
 			return Math.Abs(a - b) < Float.Epsilon;
 		}
 
+		static bool DoubleEquals(double a, double b)
+		{
+			return Math.Abs(a - b) < Double.Epsilon;
+		}
+
 		static void TestJsonParsing()
 		{
 			var data = scope String();
@@ -402,6 +407,8 @@ namespace JSON_Beef_Test
 		static void TestJsonSerializing()
 		{
 			let author = scope Author("Jonathan", "Racaud", 25);
+			author.Id = 1;
+			author.Test = 25.4f;
 			author.Publishers.Add("GoldenBooks");
 			author.Publishers.Add("AncientBooks");
 			author.Publishers.Add("NewBooks");
@@ -409,7 +416,7 @@ namespace JSON_Beef_Test
 			author.Books.Add(new Book("Flowers for Algernon"));
 			author.Books.Add(new Book("Another book"));
 
-			let finalStr = "{\"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
+			let finalStr = "{\"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Id\":1,\"Test\":25.4,\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
 
 			let resObj = JSONSerializer.Serialize<JSONObject>(author);
 
@@ -419,26 +426,33 @@ namespace JSON_Beef_Test
 				let str = scope String();
 
 				json.ToString(str);
-				Runtime.Assert(str.Equals(finalStr), "JSON Serializing failed #1");
 
+				let deserializedAuthor = JSONDeserializer.Deserialize<Author>(str).Value;
+				Runtime.Assert(ObjectsMatch(author, deserializedAuthor), "JSON Serializing failed #1");
+
+				delete deserializedAuthor;
 				delete json;
 			}
 
-			let resStr = JSONSerializer.Serialize<String>(author);
+			/// Need to find a way to reliably test serializing works when serializing to String.
+			/// Especially because of the float that can have representation different than the set value.
+			/*let resStr = JSONSerializer.Serialize<String>(author);
 
 			if (resStr != .Err)
 			{
 				Runtime.Assert(resStr.Value.Equals(finalStr), "JSON Serializing failed #1");
 				delete resStr.Value;
-			}
+			}*/
 
 			Console.WriteLine("JSONSerializing tests passed");
 		}
 
 		static void TestJsonDeserializing()
 		{
-			let json = "{\"Id\": 42, \"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
+			let json = "{\"Id\": 256, \"Test\": 4.2, \"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
 			let author = scope Author("Jonathan", "Racaud", 25);
+			author.Id = 256;
+			author.Test = 4.2f;
 			author.Publishers.Add("GoldenBooks");
 			author.Publishers.Add("AncientBooks");
 			author.Publishers.Add("NewBooks");
@@ -454,6 +468,7 @@ namespace JSON_Beef_Test
 				Runtime.Assert(false, "JSON Deserializing failed #1");
 			case .Ok(let parsedObj):
 				Runtime.Assert(ObjectsMatch(author, parsedObj));
+				delete parsedObj;
 			}
 
 			Console.WriteLine("JSONDeserializing tests passed");
@@ -461,7 +476,12 @@ namespace JSON_Beef_Test
 
 		static bool ObjectsMatch(Author a, Author b)
 		{
-			if ((a.FirstName != b.FirstName) || ((a.LastName != b.LastName)) || (a.Publishers.Count != b.Publishers.Count) || (a.Books.Count != b.Books.Count))
+			if ((a.FirstName != b.FirstName) ||
+				((a.LastName != b.LastName)) ||
+				(a.Publishers.Count != b.Publishers.Count) ||
+				(a.Books.Count != b.Books.Count) ||
+				(a.Id != b.Id) ||
+				!DoubleEquals(a.Test, b.Test))
 			{
 				return false;
 			}

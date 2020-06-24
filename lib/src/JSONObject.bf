@@ -92,8 +92,6 @@ namespace JSON_Beef
 			return .Err(.KEY_NOT_FOUND);
 		}
 
-		public Result<int, JSON_ERRORS> Get<int>(String key, Type type)
-
 		public Variant GetVariant(String key)
 		{
 			return dictionary[key];
