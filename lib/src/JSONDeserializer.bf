@@ -279,7 +279,7 @@ namespace JSON_Beef
 						return .Err(.ERROR_PARSING);
 					case .Ok(let val):
 						if (val != null) // Todo: For now FieldInfo.SetValue crash when the val is null we will remove this if after SetValue bug get fixed.
-							valueSet = field.SetValue(obj, val);
+							valueSet = field.SetValue(obj, new String((String)val));
 					}
 				case typeof(int):
 					let res = jsonObj.Get<int>(fieldName);
