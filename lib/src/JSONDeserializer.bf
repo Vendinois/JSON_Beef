@@ -60,12 +60,14 @@ namespace JSON_Beef
 			}
 
 			let jsonObj = res.Value;
-			if (!AreTypeMatching(jsonObj, obj))
+			/*if (!AreTypeMatching(jsonObj, obj))
 			{
 				return .Err(.TYPE_NOT_MATCHING);
-			}
+			}*/
 
 			let finalRes = DeserializeObjectInternal(jsonObj, obj);
+
+			delete res.Value;
 
 			switch (finalRes)
 			{
@@ -268,9 +270,80 @@ namespace JSON_Beef
 			{
 				switch (fieldType)
 				{
-				case typeof(String), typeof(int), typeof(float):
+				case typeof(String):
 					let res = jsonObj.Get(fieldName, fieldType);
 
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(.ERROR_PARSING);
+					case .Ok(let val):
+						if (val != null) // Todo: For now FieldInfo.SetValue crash when the val is null we will remove this if after SetValue bug get fixed.
+							valueSet = field.SetValue(obj, val);
+					}
+				case typeof(int):
+					let res = jsonObj.Get<int>(fieldName);
+
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(.ERROR_PARSING);
+					case .Ok(let val):
+						valueSet = field.SetValue(obj, val);
+					}
+				case typeof(uint):
+					let res = jsonObj.Get<uint>(fieldName);
+					
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(.ERROR_PARSING);
+					case .Ok(let val):
+						valueSet = field.SetValue(obj, val);
+					}
+				case typeof(int32):
+					let res = jsonObj.Get<int32>(fieldName);
+					
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(.ERROR_PARSING);
+					case .Ok(let val):
+						valueSet = field.SetValue(obj, val);
+					}
+				case typeof(uint32):
+					let res = jsonObj.Get<uint32>(fieldName);
+					
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(.ERROR_PARSING);
+					case .Ok(let val):
+						valueSet = field.SetValue(obj, val);
+					}
+				case typeof(int64):
+					let res = jsonObj.Get<int64>(fieldName);
+					
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(.ERROR_PARSING);
+					case .Ok(let val):
+						valueSet = field.SetValue(obj, val);
+					}
+				case typeof(uint64):
+					let res = jsonObj.Get<uint64>(fieldName);
+					
+					switch (res)
+					{
+					case .Err(let err):
+						return .Err(.ERROR_PARSING);
+					case .Ok(let val):
+						valueSet = field.SetValue(obj, val);
+					}
+				case typeof(float):
+					let res = jsonObj.Get<float>(fieldName);
+					
 					switch (res)
 					{
 					case .Err(let err):

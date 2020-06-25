@@ -62,7 +62,7 @@ namespace JSON_Beef
 			{
 				let value = dictionary[key];
 
-				if (value.VariantType == typeof(T))
+				if (value.VariantType == typeof(T) || (value.VariantType.IsInteger && typeof(T).IsInteger))
 				{
 					T ret = value.Get<T>();
 					return .Ok(ret);
@@ -84,6 +84,10 @@ namespace JSON_Beef
 				{
 					let ret = value.Get<Object>();
 					return .Ok(ret);
+				}
+				else if (value.VariantType == typeof(JSON_LITERAL))
+				{
+					return .Ok(null);
 				}
 
 				return .Err(.INVALID_TYPE);
