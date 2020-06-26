@@ -85,7 +85,7 @@ namespace JSON_Beef
 					let ret = value.Get<Object>();
 					return .Ok(ret);
 				}
-				else if (value.VariantType == typeof(JSON_LITERAL))
+				else if (value.VariantType == typeof(JSON_LITERAL) && value.Get<JSON_LITERAL>() == .NULL)
 				{
 					return .Ok(null);
 				}
