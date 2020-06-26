@@ -23,7 +23,7 @@ namespace JSON_Beef_Test
 		public float Test;
 		public bool Known;
 		public JsonList<Book> Books = new JsonList<Book>() ~ DeleteContainerAndItems!(_);
-		public JsonList<String> Publishers = new JsonList<String>() ~ delete _;
+		public JsonList<String> Publishers = new JsonList<String>() ~ DeleteContainerAndItems!(_);
 
 		public this(String firstName = "", String lastName = "", int age = 0)
 		{
@@ -41,7 +41,15 @@ namespace JSON_Beef_Test
 
 		public this(String name = "Book")
 		{
-			Name = name;
+			Name = new String(name);
+		}
+
+		public ~this()
+		{
+			if (Name != null)
+			{
+				delete Name;
+			}
 		}
 
 		public void Test()

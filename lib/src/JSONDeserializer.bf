@@ -312,8 +312,7 @@ namespace JSON_Beef
 						case .Err(let err):
 							return .Err(.ERROR_PARSING);
 						case .Ok(String val):
-							String str = new String(val);
-							valueSet = field.SetValue(obj, str);
+							field.SetValue(obj, new String(val));
 						}
 					default:
 						let innerObj = fieldType.CreateObject().Get();
