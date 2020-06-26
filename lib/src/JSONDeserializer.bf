@@ -58,6 +58,7 @@ namespace JSON_Beef
 			switch (res)
 			{
 			case .Err(let err):
+				delete res.Value;
 				return .Err(.ERROR_PARSING);
 			default:
 				break;
@@ -74,13 +75,13 @@ namespace JSON_Beef
 
 			let finalRes = DeserializeObjectInternal(jsonObj, obj);
 
+			delete jsonObj;
+
 			switch (finalRes)
 			{
 			case .Err(let err):
-				delete jsonObj;
 				return .Err(.ERROR_PARSING);
 			default:
-				delete jsonObj;
 				return .Ok;
 			}
 		}
