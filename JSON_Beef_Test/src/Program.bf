@@ -24,7 +24,7 @@ namespace JSON_Beef_Test
 			TestJsonUtil();
 			TestJsonParsing();
 			TestJsonSerializing();
-			//TestJsonDeserializing();
+			TestJsonDeserializing();
 
 			Console.WriteLine("Press any [enter] to exit.");
 			Console.In.Read();
@@ -414,6 +414,7 @@ namespace JSON_Beef_Test
 			let author = scope Author("Jonathan", "Racaud", 25);
 			author.Id = 1;
 			author.Test = 25.4f;
+			author.Known = false;
 			author.Publishers.Add(new String("GoldenBooks"));
 			author.Publishers.Add(new String("AncientBooks"));
 			author.Publishers.Add(new String("NewBooks"));
@@ -494,7 +495,7 @@ namespace JSON_Beef_Test
 				(a.Publishers.Count != b.Publishers.Count) ||
 				(a.Books.Count != b.Books.Count) ||
 				(a.Id != b.Id) ||
-				a.Test.Equals(b.Test) ||
+				!a.Test.Equals(b.Test) ||
 				(a.Known != b.Known))
 			{
 				return false;

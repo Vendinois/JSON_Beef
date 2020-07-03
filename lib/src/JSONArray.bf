@@ -134,7 +134,7 @@ namespace JSON_Beef
 				}
 			}
 
-			if ((typeof(T) == typeof(JSONObject)) || (typeof(T) == typeof(JSONArray)) || (typeof(T) == typeof(String)))
+			if ((type == typeof(JSONObject)) || (type == typeof(JSONArray)) || (type == typeof(String)))
 			{
 				if (value.VariantType == typeof(T))
 				{

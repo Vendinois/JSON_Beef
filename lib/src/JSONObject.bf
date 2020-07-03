@@ -166,40 +166,34 @@ namespace JSON_Beef
 			}
 
 			let variant = GetVariant(key);
+			let type = typeof(T);
 
-			if (variant.VariantType == typeof(String))
+			if ((variant.VariantType == typeof(String)) && type.IsPrimitive)
 			{
-				if (typeof(T).IsPrimitive && JSONUtil.ParseNumber<T>(variant.Get<String>()) case .Ok(let val))
+				if ((type == typeof(bool)) && JSONUtil.ParseBool(variant.Get<String>()) case .Ok(let val))
 				{
 					return true;
 				}
-				if ((typeof(T) == typeof(bool)) && JSONUtil.ParseBool(variant.Get<String>()) case .Ok(let val))
+				if (JSONUtil.ParseNumber<T>(variant.Get<String>()) case .Ok(let val))
 				{
 					return true;
 				}
+			}
+
+			if ((type == typeof(JSONObject)) || (type == typeof(JSONArray)) || (type == typeof(String)))
+			{
+				if (variant.VariantType == type)
+				{
+					return true;
+				}
+			}
+
+			if (variant.Get<Object>() == null)
+			{
+				return true;
 			}
 
 			return false;
-		}
-
-		public bool Contains(String key, Type type)
-		{
-			if (!dictionary.ContainsKey(key))
-			{
-				return false;
-			}
-
-			let variant = GetVariant(key);
-
-			switch (type)
-			{
-			case typeof(bool):
-				return ((variant.VariantType == typeof(JSON_LITERAL)) && (variant.Get<JSON_LITERAL>() != .NULL));
-			case variant.VariantType:
-				return true;
-			default:
-				return false;
-			}
 		}
 
 		private void Add(String key, String val)
