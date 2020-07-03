@@ -6,11 +6,16 @@ namespace JSON_Beef
 	{
 		public static Result<T, JSON_ERRORS> ParseNumber<T>(String json)
 		{
+			if (!JSONValidator.IsValidNumber(json))
+			{
+				return .Err(.INVALID_JSON_STRING);
+			}
+
 			let type = typeof(T);
 
 			if (!type.IsPrimitive)
 			{
-				return .Err(.INVALID_TYPE);
+				return .Err(.INVALID_RETURN_TYPE);
 			}
 
 			if (type.IsFloatingPoint)
@@ -19,6 +24,27 @@ namespace JSON_Beef
 			}
 
 			return ParseIntInternal<T>(json);
+		}
+
+		public static Result<bool, JSON_ERRORS> ParseBool(String json)
+		{
+			if (!JSONValidator.IsValidLiteral(json))
+			{
+				return .Err(.INVALID_JSON_STRING);
+			}
+
+			if (json.Equals("true"))
+			{
+				return .Ok(true);
+			}
+			else if (json.Equals("false"))
+			{
+				return .Ok(false);
+			}
+			else
+			{
+				return .Err(.INVALID_LITERAL_VALUE);
+			}
 		}
 
 		[Obsolete("ParseFloat is deprecated. Use ParseNumber<float> instead.", false)]
@@ -45,7 +71,7 @@ namespace JSON_Beef
 
 			if (idx == -1)
 			{
-				return .Ok(CastToRightInt<T>(json));
+				return CastToRightInt<T>(json);
 			}
 
 			if ((json[idx + 1] == '-'))
@@ -67,7 +93,7 @@ namespace JSON_Beef
 				numStr.Append('0');
 			}
 
-			return .Ok(CastToRightInt<T>(numStr));
+			return CastToRightInt<T>(numStr);
 		}
 
 		private static Result<T, JSON_ERRORS> CastToRightInt<T>(StringView str)
@@ -128,7 +154,7 @@ namespace JSON_Beef
 					str.Insert(0, '-');
 				}
 
-				return .Ok(CastToRightFloatingPoint<T>(str));
+				return CastToRightFloatingPoint<T>(str);
 			}
 
 			if (str[idx + 1] == '+')
@@ -195,7 +221,7 @@ namespace JSON_Beef
 				numStr.Insert(0, '-');
 			}
 
-			return .Ok(CastToRightFloatingPoint<T>(str));
+			return CastToRightFloatingPoint<T>(numStr);
 		}
 
 		private static Result<T, JSON_ERRORS> CastToRightFloatingPoint<T>(StringView str)

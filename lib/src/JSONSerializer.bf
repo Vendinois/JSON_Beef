@@ -51,7 +51,7 @@ namespace JSON_Beef
 			{
 				if (item == null)
 				{
-					jsonArray.Add(JSON_LITERAL.NULL);
+					jsonArray.Add<Object>(null);
 				}
 				else if (IsList(item))
 				{
@@ -62,7 +62,7 @@ namespace JSON_Beef
 						return .Err;
 					}
 
-					jsonArray.Add(res.Value);
+					jsonArray.Add<JSONArray>(res.Value);
 				}
 				else
 				{
@@ -71,13 +71,39 @@ namespace JSON_Beef
 					switch (itemType)
 					{
 					case typeof(String):
-						jsonArray.Add(item as String);
+						jsonArray.Add<String>(item as String);
 					case typeof(int):
-						jsonArray.Add((int)item);
+						jsonArray.Add<int>((int)item);
+					case typeof(int8):
+						jsonArray.Add<int8>((int8)item);
+					case typeof(int16):
+						jsonArray.Add<int16>((int16)item);
+					case typeof(int32):
+						jsonArray.Add<int32>((int32)item);
+					case typeof(int64):
+						jsonArray.Add<int64>((int64)item);
+					case typeof(uint):
+						jsonArray.Add<uint>((uint)item);
+					case typeof(uint8):
+						jsonArray.Add<uint8>((uint8)item);
+					case typeof(uint16):
+						jsonArray.Add<uint16>((uint16)item);
+					case typeof(uint32):
+						jsonArray.Add<uint32>((uint32)item);
+					case typeof(uint64):
+						jsonArray.Add<uint64>((uint64)item);
+					case typeof(char8):
+						jsonArray.Add<char8>((char8)item);
+					case typeof(char16):
+						jsonArray.Add<char16>((char16)item);
+					case typeof(char32):
+						jsonArray.Add<char32>((char32)item);
 					case typeof(float):
-						jsonArray.Add((float)item);
+						jsonArray.Add<float>((float)item);
+					case typeof(double):
+						jsonArray.Add<double>((float)item);
 					case typeof(bool):
-						jsonArray.Add(JSONUtil.BoolToLiteral((bool)item));
+						jsonArray.Add<bool>((bool)item);
 					default:
 						let res = Serialize<JSONObject>(item);
 
@@ -86,7 +112,7 @@ namespace JSON_Beef
 							return .Err;
 						}
 
-						jsonArray.Add(res.Value);
+						jsonArray.Add<JSONObject>(res.Value);
 						delete res.Value;
 					}
 				}
@@ -156,11 +182,37 @@ namespace JSON_Beef
 				switch (fieldVariantType)
 				{
 				case typeof(int):
-					json.Add(fieldName, fieldVariant.Get<int>());
+					json.Add<int>(fieldName, fieldVariant.Get<int>());
+				case typeof(int8):
+					json.Add<int8>(fieldName, fieldVariant.Get<int8>());
+				case typeof(int16):
+					json.Add<int16>(fieldName, fieldVariant.Get<int16>());
+				case typeof(int32):
+					json.Add<int32>(fieldName, fieldVariant.Get<int32>());
+				case typeof(int64):
+					json.Add<int64>(fieldName, fieldVariant.Get<int64>());
+				case typeof(uint):
+					json.Add<uint>(fieldName, fieldVariant.Get<uint>());
+				case typeof(uint8):
+					json.Add<uint8>(fieldName, fieldVariant.Get<uint8>());
+				case typeof(uint16):
+					json.Add<uint16>(fieldName, fieldVariant.Get<uint16>());
+				case typeof(uint32):
+					json.Add<uint32>(fieldName, fieldVariant.Get<uint32>());
+				case typeof(uint64):
+					json.Add<uint64>(fieldName, fieldVariant.Get<uint64>());
+				case typeof(char8):
+					json.Add<char8>(fieldName, fieldVariant.Get<char8>());
+				case typeof(char16):
+					json.Add<char16>(fieldName, fieldVariant.Get<char16>());
+				case typeof(char32):
+					json.Add<char32>(fieldName, fieldVariant.Get<char32>());
 				case typeof(float):
-					json.Add(fieldName, fieldVariant.Get<float>());
+					json.Add<float>(fieldName, fieldVariant.Get<float>());
+				case typeof(double):
+					json.Add<double>(fieldName, fieldVariant.Get<double>());
 				case typeof(bool):
-					json.Add(fieldName, JSONUtil.BoolToLiteral((bool)fieldVariant.Get<bool>()));
+					json.Add<bool>(fieldName, fieldVariant.Get<bool>());
 				default:
 					return .Err;
 				}
@@ -171,7 +223,7 @@ namespace JSON_Beef
 
 				if (fieldValue == null)
 				{
-					json.Add(fieldName, JSON_LITERAL.NULL);
+					json.Add<Object>(fieldName, null);
 					return .Ok;
 				}
 
@@ -186,7 +238,7 @@ namespace JSON_Beef
 						return .Err;
 					}
 
-					json.Add(fieldName, res.Value);
+					json.Add<JSONArray>(fieldName, res.Value);
 					delete res.Value;
 				}
 				else
@@ -194,7 +246,7 @@ namespace JSON_Beef
 					switch (fieldVariantType)
 					{
 					case typeof(String):
-						json.Add(fieldName, (String)fieldValue);
+						json.Add<String>(fieldName, (String)fieldValue);
 					default:
 						let res = Serialize<JSONObject>(fieldValue);
 
@@ -204,7 +256,7 @@ namespace JSON_Beef
 							return .Err;
 						}
 
-						json.Add(fieldName, res.Value);
+						json.Add<JSONObject>(fieldName, res.Value);
 						delete res.Value;
 					}
 				}
@@ -244,7 +296,7 @@ namespace JSON_Beef
 
 				if (fieldValue == null)
 				{
-					json.Add(fieldName, JSON_LITERAL.NULL);
+					json.Add<Object>(fieldName, null);
 				}
 				else if (IsList(fieldValue))
 				{
@@ -255,7 +307,7 @@ namespace JSON_Beef
 						return .Err;
 					}
 
-					json.Add(fieldName, res.Value);
+					json.Add<JSONArray>(fieldName, res.Value);
 					delete res.Value;
 				}
 				else
@@ -263,13 +315,39 @@ namespace JSON_Beef
 					switch (fieldVariantType)
 					{
 					case typeof(String):
-						json.Add(fieldName, (String)fieldValue);
+						json.Add<String>(fieldName, (String)fieldValue);
 					case typeof(int):
-						json.Add(fieldName, (int)fieldValue);
+						json.Add<int>(fieldName, (int)fieldValue);
+					case typeof(int8):
+						json.Add<int8>(fieldName, (int8)fieldValue);
+					case typeof(int16):
+						json.Add<int16>(fieldName, (int16)fieldValue);
+					case typeof(int32):
+						json.Add<int32>(fieldName, (int32)fieldValue);
+					case typeof(int64):
+						json.Add<int64>(fieldName, (int64)fieldValue);
+					case typeof(uint):
+						json.Add<uint>(fieldName, (uint)fieldValue);
+					case typeof(uint8):
+						json.Add<uint8>(fieldName, (uint8)fieldValue);
+					case typeof(uint16):
+						json.Add<uint16>(fieldName, (uint16)fieldValue);
+					case typeof(uint32):
+						json.Add<uint32>(fieldName, (uint32)fieldValue);
+					case typeof(uint64):
+						json.Add<uint64>(fieldName, (uint64)fieldValue);
+					case typeof(char8):
+						json.Add<char8>(fieldName, (char8)fieldValue);
+					case typeof(char16):
+						json.Add<char16>(fieldName, (char16)fieldValue);
+					case typeof(char32):
+						json.Add<char32>(fieldName, (char32)fieldValue);
 					case typeof(float):
-						json.Add(fieldName, (float)fieldValue);
+						json.Add<float>(fieldName, (float)fieldValue);
+					case typeof(double):
+						json.Add<double>(fieldName, (double)fieldValue);
 					case typeof(bool):
-						json.Add(fieldName, JSONUtil.BoolToLiteral((bool)fieldValue));
+						json.Add<bool>(fieldName, (bool)fieldValue);
 					default:
 						let res = Serialize<JSONObject>(fieldValue);
 
@@ -279,7 +357,7 @@ namespace JSON_Beef
 							return .Err;
 						}
 
-						json.Add(fieldName, res.Value);
+						json.Add<JSONObject>(fieldName, res.Value);
 						delete res.Value;
 					}
 				}
@@ -296,7 +374,7 @@ namespace JSON_Beef
 
 			if (fieldValue == null)
 			{
-				json.Add(JSON_LITERAL.NULL);
+				json.Add<Object>(null);
 			}
 			else if (IsList(fieldValue))
 			{
@@ -307,7 +385,7 @@ namespace JSON_Beef
 					return .Err;
 				}
 
-				json.Add(res.Value);
+				json.Add<JSONArray>(res.Value);
 				delete res.Value;
 			}
 			else
@@ -315,13 +393,39 @@ namespace JSON_Beef
 				switch (fieldVariantType)
 				{
 				case typeof(String):
-					json.Add((String)fieldValue);
+					json.Add<String>((String)fieldValue);
 				case typeof(int):
-					json.Add((int)fieldValue);
+					json.Add<int>((int)fieldValue);
+				case typeof(int8):
+					json.Add<int8>((int8)fieldValue);
+				case typeof(int16):
+					json.Add<int16>((int16)fieldValue);
+				case typeof(int32):
+					json.Add<int32>((int32)fieldValue);
+				case typeof(int64):
+					json.Add<int64>((int64)fieldValue);
+				case typeof(uint):
+					json.Add<uint>((uint)fieldValue);
+				case typeof(uint8):
+					json.Add<uint8>((uint8)fieldValue);
+				case typeof(uint16):
+					json.Add<uint16>((uint16)fieldValue);
+				case typeof(uint32):
+					json.Add<uint32>((uint32)fieldValue);
+				case typeof(char8):
+					json.Add<char8>((char8)fieldValue);
+				case typeof(char16):
+					json.Add<char16>((char16)fieldValue);
+				case typeof(char32):
+					json.Add<char32>((char32)fieldValue);
+				case typeof(uint64):
+					json.Add<uint64>((uint64)fieldValue);
 				case typeof(float):
-					json.Add((float)fieldValue);
+					json.Add<float>((float)fieldValue);
+				case typeof(double):
+					json.Add<double>((double)fieldValue);
 				case typeof(bool):
-					json.Add(JSONUtil.BoolToLiteral((bool)fieldValue));
+					json.Add<bool>((bool)fieldValue);
 				default:
 					let res = Serialize<JSONObject>(fieldValue);
 
@@ -331,7 +435,7 @@ namespace JSON_Beef
 						return .Err;
 					}
 
-					json.Add(res.Value);
+					json.Add<JSONObject>(res.Value);
 					delete res.Value;
 				}
 			}
