@@ -45,7 +45,10 @@ namespace JSON_Beef
 		{
 			for (var item in dictionary)
 			{
-				item.value.Dispose();
+				if (item.value != null)
+				{
+					item.value.Dispose();
+				}
 				delete item.key;
 			}
 
@@ -124,9 +127,9 @@ namespace JSON_Beef
 
 		public void Add<T>(String key, Object val)
 		{
-			let k = new String(key);
 			if (val == null)
 			{
+				let k = new String(key);
 				dictionary.Add(k, Variant.Create(default(T)));
 				return;
 			}
