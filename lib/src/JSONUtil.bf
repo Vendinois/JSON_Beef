@@ -4,7 +4,62 @@ namespace JSON_Beef
 {
 	public class JSONUtil
 	{
+		public static Result<T, JSON_ERRORS> ParseNumber<T>(String json)
+		{
+			if (!JSONValidator.IsValidNumber(json))
+			{
+				return .Err(.INVALID_JSON_STRING);
+			}
+
+			let type = typeof(T);
+
+			if (!type.IsPrimitive)
+			{
+				return .Err(.INVALID_RETURN_TYPE);
+			}
+
+			if (type.IsFloatingPoint)
+			{
+				return ParseFloatInternal<T>(json);
+			}
+
+			return ParseIntInternal<T>(json);
+		}
+
+		public static Result<bool, JSON_ERRORS> ParseBool(String json)
+		{
+			if (!JSONValidator.IsValidLiteral(json))
+			{
+				return .Err(.INVALID_JSON_STRING);
+			}
+
+			if (json.Equals("true"))
+			{
+				return .Ok(true);
+			}
+			else if (json.Equals("false"))
+			{
+				return .Ok(false);
+			}
+			else
+			{
+				return .Err(.INVALID_LITERAL_VALUE);
+			}
+		}
+
+		[Obsolete("ParseFloat is deprecated. Use ParseNumber<float> instead.", false)]
+		public static Result<float, JSON_ERRORS> ParseFloat(String json)
+		{
+			return ParseFloatInternal<float>(json);
+		}
+
+		[Obsolete("ParseFloat is deprecated. Use ParseNumber<float> instead.", false)]
 		public static Result<int, JSON_ERRORS> ParseInt(String json)
+		{
+			return ParseIntInternal<int>(json);
+		}
+
+		private static Result<T, JSON_ERRORS> ParseIntInternal<T>(StringView json)
 		{
 			let idx = json.IndexOf('e');
 			var expStartIdx = idx + 1;
@@ -16,7 +71,7 @@ namespace JSON_Beef
 
 			if (idx == -1)
 			{
-				return .Ok(Int.Parse(json));
+				return CastToRightInt<T>(json);
 			}
 
 			if ((json[idx + 1] == '-'))
@@ -38,10 +93,46 @@ namespace JSON_Beef
 				numStr.Append('0');
 			}
 
-			return .Ok(Int.Parse(numStr));
+			return CastToRightInt<T>(numStr);
 		}
 
-		public static Result<float, JSON_ERRORS> ParseFloat(String json)
+		private static Result<T, JSON_ERRORS> CastToRightInt<T>(StringView str)
+		{
+			let type = typeof(T);
+			T outNum = default;
+
+			switch (type)
+			{
+			// Didn't find another way to cast when using reflection.
+			// Also, int8 and int16 do not provide a Parse method.
+			case typeof(int), typeof(int8), typeof(int16):
+				var num = int.Parse(str);
+				Internal.MemCpy(&outNum, &num, type.Size);
+			case typeof(int32):
+				var num = int32.Parse(str);
+				Internal.MemCpy(&outNum, &num, type.Size);
+			case typeof(int64):
+				var num = int64.Parse(str);
+				Internal.MemCpy(&outNum, &num, type.Size);
+
+			// uint8/16 and char types do not provide a Parse method.
+			case typeof(uint), typeof(uint8), typeof(uint16), typeof(char8), typeof(char16), typeof(char32):
+				var num = uint.Parse(str);
+				Internal.MemCpy(&outNum, &num, type.Size);
+			case typeof(uint32):
+				var num = uint32.Parse(str);
+				Internal.MemCpy(&outNum, &num, type.Size);
+			case typeof(uint64):
+				var num = uint64.Parse(str);
+				Internal.MemCpy(&outNum, &num, type.Size);
+			default:
+				return .Err(.INVALID_TYPE);
+			}
+
+			return .Ok(outNum);
+		}
+
+		private static Result<T, JSON_ERRORS> ParseFloatInternal<T>(StringView json)
 		{
 			var str = scope String(json);
 			let isNeg = (str[0] == '-');
@@ -62,7 +153,8 @@ namespace JSON_Beef
 				{
 					str.Insert(0, '-');
 				}
-				return .Ok(Float.Parse(str));
+
+				return CastToRightFloatingPoint<T>(str);
 			}
 
 			if (str[idx + 1] == '+')
@@ -129,7 +221,30 @@ namespace JSON_Beef
 				numStr.Insert(0, '-');
 			}
 
-			return .Ok(Float.Parse(numStr));
+			return CastToRightFloatingPoint<T>(numStr);
+		}
+
+		private static Result<T, JSON_ERRORS> CastToRightFloatingPoint<T>(StringView str)
+		{
+			let type = typeof(T);
+			T outNum = default;
+
+			if (type == typeof(float))
+			{
+				var res = Float.Parse(str);
+				Internal.MemCpy(&outNum, &res, type.Size);
+			}
+			else if (type == typeof(double))
+			{
+				var res = Double.Parse(str);
+				Internal.MemCpy(&outNum, &res, type.Size);
+			}
+			else
+			{
+				return .Err(.INVALID_TYPE);
+			}
+
+			return .Ok(outNum);
 		}
 
 		public static JSON_LITERAL BoolToLiteral(bool b)

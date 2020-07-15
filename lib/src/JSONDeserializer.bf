@@ -12,10 +12,12 @@ namespace JSON_Beef
 			NO_ERROR,
 			TYPE_NOT_MATCHING,
 			ERROR_PARSING,
-			CANNOT_ASSIGN_VALUE
+			CANNOT_ASSIGN_VALUE,
+			FIELD_NOT_FOUND,
+			INVALID_FIELD_TYPE
 		}
 
-		public static Result<T, DESERIALIZE_ERRORS> Deserialize<T>(String json) where T: new
+		public static Result<T, DESERIALIZE_ERRORS> Deserialize<T>(String json) where T: new, delete
 		{
 			if (!JSONValidator.IsValidJson(json))
 			{
@@ -34,12 +36,14 @@ namespace JSON_Beef
 			case .OBJECT:
 				res = DeserializeObjectInternal(json, finalObj);
 			case .UNKNOWN:
+				delete finalObj;
 				return .Err(.ERROR_PARSING);
 			}
 
 			switch (res)
 			{
 			case .Err(let err):
+				delete finalObj;
 				return .Err(err);
 			case .Ok:
 				return .Ok(finalObj);
@@ -54,18 +58,24 @@ namespace JSON_Beef
 			switch (res)
 			{
 			case .Err(let err):
+				delete res.Value;
 				return .Err(.ERROR_PARSING);
 			default:
 				break;
 			}
 
 			let jsonObj = res.Value;
-			if (!AreTypeMatching(jsonObj, obj))
+			let typeMatched = AreTypeMatching(jsonObj, obj);
+
+			if (typeMatched != .Ok(.NO_ERROR))
 			{
-				return .Err(.TYPE_NOT_MATCHING);
+				delete jsonObj;
+				return .Err(typeMatched);
 			}
 
 			let finalRes = DeserializeObjectInternal(jsonObj, obj);
+
+			delete jsonObj;
 
 			switch (finalRes)
 			{
@@ -151,176 +161,53 @@ namespace JSON_Beef
 
 			var valueSet = Result<void, FieldInfo.Error>();
 
-			if (IsList(fieldType))
+			if (fieldType.IsPrimitive && (SetPrimitiveField(field, obj, jsonObj) case .Err(let err)))
 			{
-				let fieldValue = field.GetValue(obj).Value.Get<Object>();
-				if (fieldValue == null)
+				return .Err(err);
+			}
+			else if (fieldType.IsObject)
+			{
+				if (IsList(fieldType) && (SetListField(field, obj, jsonObj) case .Ok))
 				{
-					return .Err(.CANNOT_ASSIGN_VALUE);
+					return .Ok;
 				}
-
-				let jsonArrayRes = jsonObj.Get<JSONArray>(fieldName);
-
-				if (jsonArrayRes == .Err(.INVALID_TYPE))
+				else
 				{
-					return .Err(.ERROR_PARSING);
-				}
-
-				// Todo: Traverse the JSONArray, create the right object if needed and add to the field
-				// I think the call to the Add method of the List is as follow:
-				// fieldType.GetMethod("Add").Get().Invoke(fieldValue, param);
-
-				let jsonArray = jsonArrayRes.Value;
-
-				if (!fieldType.IsGenericType)
-				{
-					return .Err(.ERROR_PARSING);
-				}
-
-				for (int i = 0; i < jsonArray.Count; i++)
-				{
-					let variant = jsonArray.GetVariant(i);
-					//let fieldValue = field.GetValue(obj).Value.Get<Object>();
-					//let fieldType = fieldVariant.VariantType;
-					//let fieldValue = fieldVariant.Get<Object>();
-
-					switch (variant.VariantType)
+					switch (fieldType)
 					{
 					case typeof(String):
-						let val = variant.Get<String>();
-						fieldType.GetMethod("Add").Get().Invoke(fieldValue, val);
-					case typeof(int):
-						let val = variant.Get<int>();
-						fieldType.GetMethod("Add").Get().Invoke(fieldValue, val);
-				  	case typeof(float):
-						let val = variant.Get<float>();
-						fieldType.GetMethod("Add").Get().Invoke(fieldValue, val);
-					case typeof(JSON_LITERAL):
-						let val = variant.Get<JSON_LITERAL>();
-
-						if (val == .NULL)
+						if (jsonObj.Get<String>(fieldName) case .Ok(let val))
 						{
-							fieldType.GetMethod("Add").Get().Invoke(fieldValue, null);
+							valueSet = field.SetValue(obj, new String(val));
 						}
 						else
 						{
-							let b = JSONUtil.LiteralToBool(val);
-							fieldType.GetMethod("Add").Get().Invoke(fieldValue, b);
-						}
-					case typeof(JSONArray):
-						/*let val = variant.Get<JSONArray>();
-
-						let res = DeserializeArrayInternal(val, innerObj);
-
-						switch (res)
-						{
-						case .Err(let err):
-							return res;
-						case .Ok:
-							break;
-						}*/
-						break;
-					case typeof(JSONObject):
-						let val = variant.Get<JSONObject>();
-
-						// The field I'm inspecting is of type List<Book>
-						let generic = fieldType as SpecializedGenericType;
-						let genericType = generic.GetGenericArg(0) as TypeInstance;
-
-						// This is to check when debugging that the right type is retrieved
-						let typeName = scope String();
-						genericType.GetFullName(typeName);
-
-						// Fails because mTypeClassVData == null
-						var innerObjRes = genericType.CreateObject();
-
-						if (innerObjRes == .Err)
-						{
-							return .Err(.CANNOT_ASSIGN_VALUE);
-						}
-
-						var innerObj = innerObjRes.Value;
-						let ret = DeserializeObjectInternal(val, innerObj);
-
-						switch (ret)
-						{
-						case .Err(let err):
 							return .Err(.ERROR_PARSING);
-						case .Ok:
-							// GetMethod will never return a valid value because:
-							// 1. List's method are not discoverable by reflection
-							// 2. The method's implementation is not working properly. It always
-							// returns .NoResults
-							var addMethodRes = fieldType.GetMethod("Add", .ExactBinding);
-
-							switch (addMethodRes)
-							{
-							case .Ok(let method):
-								method.Invoke(fieldValue, innerObj);
-							case .Err(let err):
-								return .Err(.CANNOT_ASSIGN_VALUE);
-							}
-						}
-					}
-				}
-			}
-			else
-			{
-				switch (fieldType)
-				{
-				case typeof(String), typeof(int), typeof(float):
-					let res = jsonObj.Get(fieldName, fieldType);
-
-					switch (res)
-					{
-					case .Err(let err):
-						return .Err(.ERROR_PARSING);
-					case .Ok(let val):
-						valueSet = field.SetValue(obj, val);
-					}
-				case typeof(bool):
-					let ret = jsonObj.Get<JSON_LITERAL>(fieldName);
-
-					switch (ret)
-					{
-					case .Err(let err):
-						return .Err(.CANNOT_ASSIGN_VALUE);
-					case .Ok(let val):
-						if (val == .NULL)
-						{
-							return .Err(.CANNOT_ASSIGN_VALUE);
-						}
-						valueSet = field.SetValue(obj, val);
-					}
-				default:
-					let innerObj = fieldType.CreateObject().Get();
-					let innerJsonObjRes = jsonObj.Get<JSONObject>(fieldName);
-
-					switch (innerJsonObjRes)
-					{
-					case .Err(.INVALID_TYPE):
-						let res = jsonObj.Get<JSON_LITERAL>(fieldName);
-
-						if (res == .Err(.INVALID_TYPE))
-						{
-							return .Err(.ERROR_PARSING);
-						}
-						else
-						{
-							valueSet = field.SetValue(obj, res.Value);
-						}
-					case .Ok(let val):
-						let ret = DeserializeObjectInternal(val, innerObj);
-
-						switch (ret)
-						{
-						case .Err(let err):
-							return .Err(.ERROR_PARSING);
-						case .Ok:
-							valueSet = field.SetValue(obj, innerObj);
 						}
 					default:
-						return .Err(.ERROR_PARSING);
+						let innerObj = fieldType.CreateObject().Get();
+						let innerJsonObjRes = jsonObj.Get<JSONObject>(fieldName);
+
+						switch (innerJsonObjRes)
+						{
+						case .Ok(let val):
+							if (val == null)
+							{
+								valueSet = field.SetValue(obj, null);
+								break;
+							}
+
+							if (DeserializeObjectInternal(val, innerObj) case .Ok)
+							{
+								valueSet = field.SetValue(obj, innerObj);	
+							}
+							else
+							{
+								return .Err(.ERROR_PARSING);
+							}
+						case .Err:
+							return .Err(.ERROR_PARSING);
+						}
 					}
 				}
 			}
@@ -349,14 +236,15 @@ namespace JSON_Beef
 			return .Ok;
 		}
 
-		private static bool AreTypeMatching(JSONObject jsonObj, Object obj)
+		private static Result<DESERIALIZE_ERRORS> AreTypeMatching(JSONObject jsonObj, Object obj)
 		{
 			let type = obj.GetType();
 			let fields = type.GetFields();
 
-			if (!AreBaseTypeMatching(jsonObj, obj))
+			let baseTypeMatching = AreBaseTypeMatching(jsonObj, obj);
+			if (baseTypeMatching != .Ok(.NO_ERROR))
 			{
-				return false;
+				return baseTypeMatching;
 			}
 
 			for (var field in fields)
@@ -366,22 +254,23 @@ namespace JSON_Beef
 					continue;
 				}
 
-				if (!HasField(jsonObj, obj, field))
+				let hasField = HasField(jsonObj, obj, field);
+				if (hasField != .Ok(.NO_ERROR))
 				{
-					return false;
+					return hasField;
 				}
 			}
-			return true;
+			return .Ok(.NO_ERROR);
 		}
 
-		private static bool AreBaseTypeMatching(JSONObject jsonObj, Object obj)
+		private static Result<DESERIALIZE_ERRORS> AreBaseTypeMatching(JSONObject jsonObj, Object obj)
 		{
 			let type = obj.GetType();
 			let baseType = type.BaseType;
 
 			if (type == baseType)
 			{
-				return true;
+				return .Ok(.NO_ERROR);
 			}
 
 			let fields = baseType.GetFields();
@@ -394,13 +283,20 @@ namespace JSON_Beef
 				}
 
 				let fieldValue = field.GetValue(obj).Get().Get<Object>();
-				if (!HasField(jsonObj, obj, field) || !AreBaseTypeMatching(jsonObj, fieldValue))
+				let hasField = HasField(jsonObj, obj, field);
+				if (hasField != .Ok(.NO_ERROR))
 				{
-					return false;
+					return hasField;
+				}
+
+				let baseTypeMatching = AreBaseTypeMatching(jsonObj, fieldValue);
+				if (baseTypeMatching != .Ok(.NO_ERROR))
+				{
+					return baseTypeMatching;
 				}
 			}
 
-			return true;
+			return .Ok(.NO_ERROR);
 		}
 
 		private static bool ShouldIgnore(FieldInfo field)
@@ -427,40 +323,77 @@ namespace JSON_Beef
 			return typeName.Equals("JsonList");
 		}
 
-		private static bool HasField(JSONObject jsonObj, Object obj, FieldInfo field)
+		private static Result<DESERIALIZE_ERRORS> HasField(JSONObject jsonObj, Object obj, FieldInfo field)
 		{
 			let fieldName = scope String(field.Name);
 			let fieldVariant = field.GetValue(obj).Value;
 			let fieldVariantType = fieldVariant.VariantType;
-			let fieldValue = fieldVariant.Get<Object>();
 
-			if (IsList(fieldValue))
-			{
-				if (!IsNullOrJSONArray(jsonObj, fieldName))
-				{
-					return false;
-				}
-			}
-			else
+			var hasField = false;
+			if (fieldVariantType.IsPrimitive)
 			{
 				switch (fieldVariantType)
 				{
-				case typeof(String), typeof(int), typeof(bool), typeof(float):
-					if (!jsonObj.Contains(fieldName, fieldVariantType))
-					{
-						return false;
-					}
+				case typeof(int):
+					hasField = jsonObj.Contains<int>(fieldName);
+				case typeof(int8):
+					hasField = jsonObj.Contains<int8>(fieldName);
+				case typeof(int16):
+					hasField = jsonObj.Contains<int16>(fieldName);
+				case typeof(int32):
+					hasField = jsonObj.Contains<int32>(fieldName);
+				case typeof(int64):
+					hasField = jsonObj.Contains<int64>(fieldName);
+				case typeof(uint):
+					hasField = jsonObj.Contains<uint>(fieldName);
+				case typeof(uint8):
+					hasField = jsonObj.Contains<uint8>(fieldName);
+				case typeof(uint16):
+					hasField = jsonObj.Contains<uint16>(fieldName);
+				case typeof(uint32):
+					hasField = jsonObj.Contains<uint32>(fieldName);
+				case typeof(uint64):
+					hasField = jsonObj.Contains<uint64>(fieldName);
+				case typeof(char8):
+					hasField = jsonObj.Contains<char8>(fieldName);
+				case typeof(char16):
+					hasField = jsonObj.Contains<char16>(fieldName);
+				case typeof(char32):
+					hasField = jsonObj.Contains<char32>(fieldName);
+				case typeof(bool):
+					hasField = jsonObj.Contains<bool>(fieldName);
+				case typeof(float):
+					hasField = jsonObj.Contains<float>(fieldName);
+				case typeof(double):
+					hasField = jsonObj.Contains<double>(fieldName);
 				default:
-					if (!IsNullOrJSONObject(jsonObj, fieldName))
+					return .Ok(.INVALID_FIELD_TYPE);
+				}
+			}
+			else if (fieldVariantType.IsObject)
+			{
+				switch (fieldVariantType)
+				{
+				case typeof(String):
+					hasField = jsonObj.Contains<String>(fieldName);
+				default:
+					let fieldValue = fieldVariant.Get<Object>();
+
+					if (IsList(fieldValue))
 					{
-						return false;
+						hasField = jsonObj.Contains<JSONArray>(fieldName);
+					}
+					else
+					{
+						hasField = jsonObj.Contains<JSONObject>(fieldName);
 					}
 				}
 			}
-			return true;
+
+			return (hasField) ? .Ok(.NO_ERROR) : .Ok(.FIELD_NOT_FOUND);
 		}
 
-		private static bool IsNullOrJSONObject(JSONObject jsonObj, String key)
+		/*private static bool IsNullOrJSONObject(JSONObject jsonObj, String key)
 		{
 			if (jsonObj.Contains<JSON_LITERAL>(key))
 			{
@@ -498,6 +431,393 @@ namespace JSON_Beef
 			}
 
 			return true;
+		}*/
+		private static Result<void, DESERIALIZE_ERRORS> SetPrimitiveField(FieldInfo field, Object obj, JSONObject jsonObj)
+		{
+			let fieldName = scope String(field.Name);
+			let fieldType = field.FieldType;
+			var valueSet = Result<void, FieldInfo.Error>();
+
+			switch (fieldType)
+			{
+			case typeof(int):
+				if (jsonObj.Get<int>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			case typeof(int8):
+				if (jsonObj.Get<int8>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			case typeof(int16):
+				if (jsonObj.Get<int16>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			case typeof(int32):
+				if (jsonObj.Get<int32>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			case typeof(int64):
+				if (jsonObj.Get<int64>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			case typeof(uint):
+				if (jsonObj.Get<uint>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			case typeof(uint8):
+				if (jsonObj.Get<uint8>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			case typeof(uint16):
+				if (jsonObj.Get<uint16>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			case typeof(uint32):
+				if (jsonObj.Get<uint32>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			case typeof(uint64):
+				if (jsonObj.Get<uint64>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			case typeof(char8):
+				if (jsonObj.Get<char8>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			case typeof(char16):
+				if (jsonObj.Get<char16>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			case typeof(char32):
+				if (jsonObj.Get<char32>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			case typeof(float):
+				if (jsonObj.Get<float>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			case typeof(double):
+				if (jsonObj.Get<double>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			case typeof(bool):
+				if (jsonObj.Get<bool>(fieldName) case .Ok(let val))
+				{
+					valueSet = field.SetValue(obj, val);
+				}
+				else
+				{
+					return .Err(.ERROR_PARSING);
+				}
+			default:
+				return .Err(.ERROR_PARSING);
+			}
+
+			switch (valueSet)
+			{
+			case .Err(let err):
+				return .Err(.CANNOT_ASSIGN_VALUE);
+			case .Ok:
+				return .Ok;
+			}
+		}
+
+		static Result<void, DESERIALIZE_ERRORS> SetListField(FieldInfo field, Object obj, JSONObject jsonObj)
+		{
+			let fieldName = scope String(field.Name);
+			let fieldType = field.FieldType;
+			let fieldValue = field.GetValue(obj).Value.Get<Object>();
+
+			let addMethod = fieldType.GetMethod("Add").Get();
+			let paramType = addMethod.GetParamType(0);
+
+			if (fieldValue == null)
+			{
+				return .Err(.CANNOT_ASSIGN_VALUE);
+			}
+
+			let jsonArrayRes = jsonObj.Get<JSONArray>(fieldName);
+
+			if (jsonArrayRes == .Err(.INVALID_TYPE))
+			{
+				return .Err(.ERROR_PARSING);
+			}
+
+			let jsonArray = jsonArrayRes.Value;
+
+			if (!fieldType.IsGenericType)
+			{
+				return .Err(.ERROR_PARSING);
+			}
+
+			for (int i = 0; i < jsonArray.Count; i++)
+			{
+				switch (paramType)
+				{
+				case typeof(int):
+					if (jsonArray.Get<int>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(int8):
+					if (jsonArray.Get<int8>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(int16):
+					if (jsonArray.Get<int16>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(int32):
+					if (jsonArray.Get<int32>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(int64):
+					if (jsonArray.Get<int64>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(uint):
+					if (jsonArray.Get<uint>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(uint8):
+					if (jsonArray.Get<uint8>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(uint16):
+					if (jsonArray.Get<uint16>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(uint32):
+					if (jsonArray.Get<uint32>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(uint64):
+					if (jsonArray.Get<uint64>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(char8):
+					if (jsonArray.Get<char8>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(char16):
+					if (jsonArray.Get<char16>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(char32):
+					if (jsonArray.Get<char32>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(float):
+					if (jsonArray.Get<float>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(double):
+					if (jsonArray.Get<double>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(bool):
+					if (jsonArray.Get<bool>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, val);
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				case typeof(String):
+					if (jsonArray.Get<String>(i) case .Ok(let val))
+					{
+						addMethod.Invoke(fieldValue, new String(val));
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				default:
+					if (paramType.IsObject && (jsonArray.Get<JSONObject>(i) case .Ok(let val)))
+					{
+						let generic = fieldType as SpecializedGenericType;
+						let genericType = generic.GetGenericArg(0) as TypeInstance;
+
+						let typeName = scope String();
+						genericType.GetFullName(typeName);
+
+						var innerObjRes = genericType.CreateObject();
+
+						if (innerObjRes == .Err)
+						{
+							return .Err(.CANNOT_ASSIGN_VALUE);
+						}
+
+						var innerObj = innerObjRes.Value;
+
+						if ((DeserializeObjectInternal(val, innerObj) case .Ok) &&
+							(addMethod.Invoke(fieldValue, innerObj) case .Ok))
+						{
+							continue;
+						}
+						else
+						{
+							return .Err(.CANNOT_ASSIGN_VALUE);
+						}
+					}
+					else
+					{
+						return .Err(.ERROR_PARSING);
+					}
+				}
+			}
+
+			return .Ok;
 		}
 	}
 }

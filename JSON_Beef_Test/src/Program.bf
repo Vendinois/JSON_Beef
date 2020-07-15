@@ -198,26 +198,41 @@ namespace JSON_Beef_Test
 
 		static void TestJsonUtil()
 		{
-			Runtime.Assert(JSONUtil.ParseInt("42") == 42, "JSONUtil test #1 failed");
-			Runtime.Assert(JSONUtil.ParseInt("42e5") == 4200000, "JSONUtil test #2 failed");
-			Runtime.Assert(JSONUtil.ParseInt("-42e3") == -42000, "JSONUtil test #3 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<uint>("42") == (uint)42, "JSONUtil test #1 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<uint64>("42e5") == (uint64)4200000, "JSONUtil test #2 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<int>("-42e3") == -42000, "JSONUtil test #3 failed");
 
-			var res = JSONUtil.ParseInt("4.2");
+			var res = JSONUtil.ParseNumber<int>("4.2");
 			Runtime.Assert(ValidError(ref res), "JSONUtil test #4 failed");
 
-			res = JSONUtil.ParseInt("42e-3");
+			res = JSONUtil.ParseNumber<int>("42e-3");
 			Runtime.Assert(ValidError(ref res), "JSONUtil test #5 failed");
 
-			Runtime.Assert(JSONUtil.ParseFloat("42") == 42f, "JSONUtil test #6 failed");
-			Runtime.Assert(JSONUtil.ParseFloat("-42") == -42f, "JSONUtil test #7 failed");
-			Runtime.Assert(JSONUtil.ParseFloat("4.2") == 4.2f, "JSONUtil test #8 failed");
-			Runtime.Assert(JSONUtil.ParseFloat("-4.2") == -4.2f, "JSONUtil test #9 failed");
-			Runtime.Assert(JSONUtil.ParseFloat("42e3") == 42000f, "JSONUtil test #10 failed");
-			Runtime.Assert(JSONUtil.ParseFloat("-42e3") == -42000f, "JSONUtil test #11 failed");
-			Runtime.Assert(JSONUtil.ParseFloat("4.2e3") == 4200f, "JSONUtil test #12 failed");
-			Runtime.Assert(JSONUtil.ParseFloat("-4.2e3") == -4200f, "JSONUtil test #13 failed");
-			Runtime.Assert(JSONUtil.ParseFloat("4.2e-3") == 0.0042f, "JSONUtil test #14 failed");
-			Runtime.Assert(JSONUtil.ParseFloat("-4.2e-3") == -0.0042f, "JSONUtil test #15 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<float>("42").Value.Equals(42f), "JSONUtil test #6 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<float>("-42").Value.Equals(-42f), "JSONUtil test #7 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<float>("4.2").Value.Equals(4.2f), "JSONUtil test #8 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<float>("-4.2").Value.Equals(-4.2f), "JSONUtil test #9 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<float>("42e3").Value.Equals(42000f), "JSONUtil test #10 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<float>("-42e3").Value.Equals(-42000f), "JSONUtil test #11 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<float>("4.2e3").Value.Equals(4200f), "JSONUtil test #12 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<float>("-4.2e3").Value.Equals(-4200f), "JSONUtil test #13 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<float>("4.2e-3").Value.Equals(0.0042f), "JSONUtil test #14 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<float>("-4.2e-3").Value.Equals(-0.0042f), "JSONUtil test #15 failed");
+
+			Runtime.Assert(JSONUtil.ParseNumber<double>("42").Value.Equals(42), "JSONUtil test #6 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<double>("-42").Value.Equals(-42), "JSONUtil test #7 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<double>("4.2").Value.Equals(4.2), "JSONUtil test #8 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<double>("-4.2").Value.Equals(-4.2), "JSONUtil test #9 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<double>("42e3").Value.Equals(42000), "JSONUtil test #10 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<double>("-42e3").Value.Equals(-42000), "JSONUtil test #11 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<double>("4.2e3").Value.Equals(4200), "JSONUtil test #12 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<double>("-4.2e3").Value.Equals(-4200), "JSONUtil test #13 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<double>("4.2e-3").Value.Equals(0.0042), "JSONUtil test #14 failed");
+			Runtime.Assert(JSONUtil.ParseNumber<double>("-4.2e-3").Value.Equals(-0.0042), "JSONUtil test #15 failed");
+
+			Runtime.Assert(JSONUtil.ParseBool("true") == true, "JSONUtil test #16 failed");
+			Runtime.Assert(JSONUtil.ParseBool("false") == false, "JSONUtil test #16 failed");
+			Runtime.Assert(JSONUtil.ParseBool("null") == .Err(.INVALID_LITERAL_VALUE), "JSONUtil test #16 failed");
 
 			Console.WriteLine("JSONUtil tests passed");
 		}
@@ -231,11 +246,6 @@ namespace JSON_Beef_Test
 			default:
 				return false;
 			}
-		}
-
-		static bool FloatEquals(float a, float b)
-		{
-			return Math.Abs(a - b) < Float.Epsilon;
 		}
 
 		static void TestJsonParsing()
@@ -291,9 +301,9 @@ namespace JSON_Beef_Test
 			Runtime.Assert(IsValidTypeAndValue<float>(v, 5, 1.8e-5f), "JSON Parsing failed: array invalid type or value #6");
 			Runtime.Assert(IsValidTypeAndValue<int>(v, 6, 420000000), "JSON Parsing failed: array invalid type or value #7");
 			Runtime.Assert(IsValidTypeAndValue<int>(v, 7, -420000000), "JSON Parsing failed: array invalid type or value #8");
-			Runtime.Assert(IsValidTypeAndValue<JSON_LITERAL>(v, 8, .TRUE), "JSON Parsing failed: array invalid type or value #9");
-			Runtime.Assert(IsValidTypeAndValue<JSON_LITERAL>(v, 9, .FALSE), "JSON Parsing failed: array invalid type or value #10");
-			Runtime.Assert(IsValidTypeAndValue<JSON_LITERAL>(v, 10, .NULL), "JSON Parsing failed: array invalid type or value #11");
+			Runtime.Assert(IsValidTypeAndValue<bool>(v, 8, true), "JSON Parsing failed: array invalid type or value #9");
+			Runtime.Assert(IsValidTypeAndValue<bool>(v, 9, false), "JSON Parsing failed: array invalid type or value #10");
+			Runtime.Assert(IsValidTypeAndValue<Object>(v, 10, null), "JSON Parsing failed: array invalid type or value #11");
 			Runtime.Assert(IsValidTypeAndValue<String>(v, 11, "a string"), "JSON Parsing failed: array invalid type or value #12");
 		}
 
@@ -311,9 +321,9 @@ namespace JSON_Beef_Test
 			Runtime.Assert(IsValidTypeAndValue<float>(v, "a float negative scientific notation number", 1.8e-42f), "JSON Parsing failed: object invalid type or value #6");
 			Runtime.Assert(IsValidTypeAndValue<int>(v, "an int scientific notation number", 420000000), "JSON Parsing failed: object invalid type or value #7");
 			Runtime.Assert(IsValidTypeAndValue<int>(v, "an int negative scientific notation number", -420000000), "JSON Parsing failed: object invalid type or value #8");
-			Runtime.Assert(IsValidTypeAndValue<JSON_LITERAL>(v, "true", .TRUE), "JSON Parsing failed: object invalid type or value #9");
-			Runtime.Assert(IsValidTypeAndValue<JSON_LITERAL>(v, "false", .FALSE), "JSON Parsing failed: object invalid type or value #10");
-			Runtime.Assert(IsValidTypeAndValue<JSON_LITERAL>(v, "null", .NULL), "JSON Parsing failed: object invalid type or value #11");
+			Runtime.Assert(IsValidTypeAndValue<bool>(v, "true", true), "JSON Parsing failed: object invalid type or value #9");
+			Runtime.Assert(IsValidTypeAndValue<bool>(v, "false", false), "JSON Parsing failed: object invalid type or value #10");
+			Runtime.Assert(IsValidTypeAndValue<Object>(v, "null", null), "JSON Parsing failed: object invalid type or value #11");
 			Runtime.Assert(IsValidTypeAndValue<String>(v, "a string", "a string"), "JSON Parsing failed: object invalid type or value #12");
 			Runtime.Assert(IsValidTypeAndValue<String>(v, "escaped char in string", "line 1 \n\tline 2 \r\n\tline 2"), "JSON Parsing failed: object invalid type or value #13");
 
@@ -323,7 +333,7 @@ namespace JSON_Beef_Test
 
 			var anotherObj = v.Get<JSONObject>("an object");
 			Runtime.Assert(IsValidType<JSONObject>(ref anotherObj), "JSON Parsing failed: object invalid type or value #15");
-			Runtime.Assert(IsValidTypeAndValue<JSON_LITERAL>(anotherObj, "hello", .TRUE), "JSON Parsing failed: object invalid type or value #16");
+			Runtime.Assert(IsValidTypeAndValue<bool>(anotherObj, "hello", true), "JSON Parsing failed: object invalid type or value #16");
 		}
 
 		static void ValidateObject(JSONObject v)
@@ -336,9 +346,9 @@ namespace JSON_Beef_Test
 			Runtime.Assert(IsValidTypeAndValue<float>(v, "a float negative scientific notation number", 1.8e-12f), "JSON Parsing failed: object invalid type or value #6");
 			Runtime.Assert(IsValidTypeAndValue<int>(v, "an int scientific notation number", 420000000), "JSON Parsing failed: object invalid type or value #7");
 			Runtime.Assert(IsValidTypeAndValue<int>(v, "an int negative scientific notation number", -42000), "JSON Parsing failed: object invalid type or value #8");
-			Runtime.Assert(IsValidTypeAndValue<JSON_LITERAL>(v, "true", .TRUE), "JSON Parsing failed: object invalid type or value #9");
-			Runtime.Assert(IsValidTypeAndValue<JSON_LITERAL>(v, "false", .FALSE), "JSON Parsing failed: object invalid type or value #10");
-			Runtime.Assert(IsValidTypeAndValue<JSON_LITERAL>(v, "null", .NULL), "JSON Parsing failed: object invalid type or value #11");
+			Runtime.Assert(IsValidTypeAndValue<bool>(v, "true", true), "JSON Parsing failed: object invalid type or value #9");
+			Runtime.Assert(IsValidTypeAndValue<bool>(v, "false", false), "JSON Parsing failed: object invalid type or value #10");
+			Runtime.Assert(IsValidTypeAndValue<File>(v, "null", null), "JSON Parsing failed: object invalid type or value #11");
 			Runtime.Assert(IsValidTypeAndValue<String>(v, "a string", "a string"), "JSON Parsing failed: object invalid type or value #12");
 			Runtime.Assert(IsValidTypeAndValue<String>(v, "escaped char in string", "line 1 \n\tline 2 \r\n\tline 2"), "JSON Parsing failed: object invalid type or value #13");
 
@@ -348,7 +358,7 @@ namespace JSON_Beef_Test
 
 			var anotherObj = v.Get<JSONObject>("an object");
 			Runtime.Assert(IsValidType<JSONObject>(ref anotherObj), "JSON Parsing failed: object invalid type or value #15");
-			Runtime.Assert(IsValidTypeAndValue<JSON_LITERAL>(anotherObj, "hello", .TRUE), "JSON Parsing failed: object invalid type or value #16");
+			Runtime.Assert(IsValidTypeAndValue<bool>(anotherObj, "hello", true), "JSON Parsing failed: object invalid type or value #16");
 		}
 
 		static void ValidateArray(JSONArray v)
@@ -362,9 +372,9 @@ namespace JSON_Beef_Test
 			Runtime.Assert(IsValidTypeAndValue<float>(v, 5, 1.8e-3f), "JSON Parsing failed: array invalid type or value #22");
 			Runtime.Assert(IsValidTypeAndValue<int>(v, 6, 420000000), "JSON Parsing failed: array invalid type or value #23");
 			Runtime.Assert(IsValidTypeAndValue<int>(v, 7, -420000000), "JSON Parsing failed: array invalid type or value #24");
-			Runtime.Assert(IsValidTypeAndValue<JSON_LITERAL>(v, 8, .TRUE), "JSON Parsing failed: array invalid type or value #25");
-			Runtime.Assert(IsValidTypeAndValue<JSON_LITERAL>(v, 9, .FALSE), "JSON Parsing failed: array invalid type or value #26");
-			Runtime.Assert(IsValidTypeAndValue<JSON_LITERAL>(v, 10, .NULL), "JSON Parsing failed: array invalid type or value #27");
+			Runtime.Assert(IsValidTypeAndValue<bool>(v, 8, true), "JSON Parsing failed: array invalid type or value #25");
+			Runtime.Assert(IsValidTypeAndValue<bool>(v, 9, false), "JSON Parsing failed: array invalid type or value #26");
+			Runtime.Assert(IsValidTypeAndValue<Author>(v, 10, null), "JSON Parsing failed: array invalid type or value #27");
 			Runtime.Assert(IsValidTypeAndValue<String>(v, 11, "a string"), "JSON Parsing failed: array invalid type or value #28");
 		}
 
@@ -402,14 +412,17 @@ namespace JSON_Beef_Test
 		static void TestJsonSerializing()
 		{
 			let author = scope Author("Jonathan", "Racaud", 25);
-			author.Publishers.Add("GoldenBooks");
-			author.Publishers.Add("AncientBooks");
-			author.Publishers.Add("NewBooks");
+			author.Id = 1;
+			author.Test = 25.4f;
+			author.Known = false;
+			author.Publishers.Add(new String("GoldenBooks"));
+			author.Publishers.Add(new String("AncientBooks"));
+			author.Publishers.Add(new String("NewBooks"));
 			author.Books.Add(new Book("The Art of War"));
 			author.Books.Add(new Book("Flowers for Algernon"));
 			author.Books.Add(new Book("Another book"));
 
-			let finalStr = "{\"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
+			//let finalStr = "{\"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Id\":1,\"Test\":25.4,\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
 
 			let resObj = JSONSerializer.Serialize<JSONObject>(author);
 
@@ -419,29 +432,44 @@ namespace JSON_Beef_Test
 				let str = scope String();
 
 				json.ToString(str);
-				Runtime.Assert(str.Equals(finalStr), "JSON Serializing failed #1");
+
+				let deserializedAuthor = JSONDeserializer.Deserialize<Author>(str);
+
+				switch (deserializedAuthor)
+				{
+				case .Err(let err):
+					Runtime.Assert(false, "JSON Serializing failed #1");
+				case .Ok(let val):
+					Runtime.Assert(ObjectsMatch(author, deserializedAuthor), "JSON Serializing failed #2");
+					delete deserializedAuthor.Value;
+				}
 
 				delete json;
 			}
 
-			let resStr = JSONSerializer.Serialize<String>(author);
+			/// Need to find a way to reliably test serializing works when serializing to String.
+			/// Especially because of the float that can have representation different than the set value.
+			/*let resStr = JSONSerializer.Serialize<String>(author);
 
 			if (resStr != .Err)
 			{
 				Runtime.Assert(resStr.Value.Equals(finalStr), "JSON Serializing failed #1");
 				delete resStr.Value;
-			}
+			}*/
 
 			Console.WriteLine("JSONSerializing tests passed");
 		}
 
 		static void TestJsonDeserializing()
 		{
-			let json = "{\"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
+			let json = "{\"Id\": 256, \"Test\": 4.2, \"Known\": false, \"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
 			let author = scope Author("Jonathan", "Racaud", 25);
-			author.Publishers.Add("GoldenBooks");
-			author.Publishers.Add("AncientBooks");
-			author.Publishers.Add("NewBooks");
+			author.Id = 256;
+			author.Test = 4.2f;
+			author.Known = false;
+			author.Publishers.Add(new String("GoldenBooks"));
+			author.Publishers.Add(new String("AncientBooks"));
+			author.Publishers.Add(new String("NewBooks"));
 			author.Books.Add(new Book("The Art of War"));
 			author.Books.Add(new Book("Flowers for Algernon"));
 			author.Books.Add(new Book("Another book"));
@@ -454,6 +482,7 @@ namespace JSON_Beef_Test
 				Runtime.Assert(false, "JSON Deserializing failed #1");
 			case .Ok(let parsedObj):
 				Runtime.Assert(ObjectsMatch(author, parsedObj));
+				delete parsedObj;
 			}
 
 			Console.WriteLine("JSONDeserializing tests passed");
@@ -461,7 +490,13 @@ namespace JSON_Beef_Test
 
 		static bool ObjectsMatch(Author a, Author b)
 		{
-			if ((a.FirstName != b.FirstName) || ((a.LastName != b.LastName)) || (a.Publishers.Count != b.Publishers.Count) || (a.Books.Count != b.Books.Count))
+			if ((a.FirstName != b.FirstName) ||
+				((a.LastName != b.LastName)) ||
+				(a.Publishers.Count != b.Publishers.Count) ||
+				(a.Books.Count != b.Books.Count) ||
+				(a.Id != b.Id) ||
+				!a.Test.Equals(b.Test) ||
+				(a.Known != b.Known))
 			{
 				return false;
 			}

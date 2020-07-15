@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Reflection;
 
 namespace JSON_Beef
 {
@@ -30,12 +31,6 @@ namespace JSON_Beef
 
 				switch (value.VariantType)
 				{
-				case typeof(int):
-					Add(value.Get<int>());
-				case typeof(float):
-					Add(value.Get<float>());
-				case typeof(JSON_LITERAL):
-					Add(value.Get<JSON_LITERAL>());
 				case typeof(JSONObject):
 					Add(value.Get<JSONObject>());
 				case typeof(JSONArray):
@@ -43,7 +38,10 @@ namespace JSON_Beef
 				case typeof(String):
 					Add(value.Get<String>());
 				default:
-					break;
+					if (value.Get<Object>() == null)
+					{
+						list.Add(Variant.Create(default(Object)));
+					}
 				}
 			}
 		}
@@ -59,37 +57,49 @@ namespace JSON_Beef
 			delete list;
 		}
 
-		public void Add(String val)
+		public void Add<T>(Object val)
+		{
+			if (val == null)
+			{
+				list.Add(Variant.Create(default(T)));
+				return;
+			}
+
+			let type = typeof(T);
+
+			if (type.IsPrimitive || (type == typeof(bool)))
+			{
+				let str = scope String();
+				val.ToString(str);
+				str.ToLower();
+				Add(str);
+				return;
+			}
+
+			switch (type)
+			{
+			case typeof(JSONObject):
+				Add((JSONObject)val);
+			case typeof(JSONArray):
+				Add((JSONArray)val);
+			case typeof(String):
+				Add((String)val);
+			}
+		}
+
+		private void Add(String val)
 		{
 			let v = new String(val);
 			list.Add(Variant.Create(v, true));
 		}
 
-		public void Add(int val)
-		{
-			let v = val;
-			list.Add(Variant.Create(v));
-		}
-
-		public void Add(float val)
-		{
-			let v = val;
-			list.Add(Variant.Create(v));
-		}
-
-		public void Add(JSON_LITERAL val)
-		{
-			let v = val;
-			list.Add(Variant.Create(v));
-		}
-
-		public void Add(JSONObject val)
+		private void Add(JSONObject val)
 		{
 			let v = new JSONObject(val);
 			list.Add(Variant.Create(v, true));
 		}
 
-		public void Add(JSONArray val)
+		private void Add(JSONArray val)
 		{
 			let v = new JSONArray(val);
 			list.Add(Variant.Create(v, true));
@@ -104,10 +114,38 @@ namespace JSON_Beef
 
 			let value = list[idx];
 
-			if (value.VariantType == typeof(T))
+			let type = typeof(T);
+
+			if ((value.VariantType == typeof(String)) && type.IsPrimitive)
 			{
-				T ret = value.Get<T>();
-				return .Ok(ret);
+				if (type == typeof(bool))
+				{
+					bool res = JSONUtil.ParseBool(value.Get<String>());
+					T outVal = default;
+					Internal.MemCpy(&outVal, &res, sizeof(bool));
+					return .Ok(outVal);
+				}
+				else
+				{
+					var res = JSONUtil.ParseNumber<T>(value.Get<String>());
+					T outVal = default;
+					Internal.MemCpy(&outVal, &res, type.Size);
+					return .Ok(outVal);
+				}
+			}
+
+			if ((type == typeof(JSONObject)) || (type == typeof(JSONArray)) || (type == typeof(String)))
+			{
+				if (value.VariantType == typeof(T))
+				{
+					T ret = value.Get<T>();
+					return .Ok(ret);
+				}
+			}
+
+			if (value.Get<Object>() == null)
+			{
+				return default(T);
 			}
 
 			return .Err(.INVALID_RETURN_TYPE);
@@ -128,13 +166,6 @@ namespace JSON_Beef
 				{
 				case typeof(String):
 					tempStr.AppendF("\"{}\"", variant.Get<String>());
-				case typeof(int):
-					variant.Get<Int>().ToString(tempStr);
-				case typeof(float):
-					variant.Get<Float>().ToString(tempStr);
-				case typeof(JSON_LITERAL):
-					variant.Get<JSON_LITERAL>().ToString(tempStr);
-					tempStr.ToLower();
 				case typeof(JSONObject):
 					variant.Get<JSONObject>().ToString(tempStr);
 				case typeof(JSONArray):
