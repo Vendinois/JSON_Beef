@@ -312,7 +312,7 @@ namespace JSON_Beef
 			let typeName = scope String();
 			type.GetName(typeName);
 
-			return typeName.Equals("JsonList");
+			return typeName.Equals("List");
 		}
 
 		private static bool IsList(Type type)
@@ -320,7 +320,7 @@ namespace JSON_Beef
 			let typeName = scope String();
 			type.GetName(typeName);
 
-			return typeName.Equals("JsonList");
+			return typeName.Equals("List");
 		}
 
 		private static Result<DESERIALIZE_ERRORS> HasField(JSONObject jsonObj, Object obj, FieldInfo field)

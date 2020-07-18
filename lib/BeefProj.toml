@@ -3,3 +3,9 @@ Dependencies = {corlib = "*", corlib = "*", BeefExtensionsLib = "*"}
 
 [Project]
 Name = "JSON_Beef"
+
+[[Project.DistinctOptions]]
+Filter = "System.Collections.List<*>"
+ReflectAlwaysInclude = "AssumeInstantiated"
+ReflectStaticMethods = true
+ReflectNonStaticMethods = true

@@ -45,7 +45,7 @@ namespace JSON_Beef
 		{
 			for (var item in dictionary)
 			{
-				if (item.value != null)
+				if (item.value.HasValue)
 				{
 					item.value.Dispose();
 				}

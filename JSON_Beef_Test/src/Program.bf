@@ -44,7 +44,7 @@ namespace JSON_Beef_Test
 		{
 			Runtime.Assert(JSONValidator.IsValidNumber("42"), "Numbers Validation Test #1 failed");
 			Runtime.Assert(JSONValidator.IsValidNumber("-42"), "Numbers Validation Test #2 failed");
-			Runtime.Assert(JSONValidator.IsValidNumber("42.42"), "Numbers Validation Test #3 failed");
+			Runtime.Assert(JSONValidator.IsValidNumber("4242"), "Numbers Validation Test #3 failed");
 			Runtime.Assert(JSONValidator.IsValidNumber("-42.42"), "Numbers Validation Test #4 failed");
 			Runtime.Assert(JSONValidator.IsValidNumber("42e3"), "Numbers Validation Test #5 failed");
 			Runtime.Assert(JSONValidator.IsValidNumber("42e+3"), "Numbers Validation Test #6 failed");
