@@ -7,6 +7,7 @@ namespace JSON_Beef
 	// so it is impossible for the moment to invoke the Add method when deserializing a string into an object.
 	[AlwaysInclude(AssumeInstantiated=true, IncludeAllMethods=true)]
 	[Reflect]
+	[Obsolete("Use case no longer exists, can be swapped by the List<T> type.", false)]
 	public class JsonList<T> : List<T>
 	{
 		// The Add method is overridden only to make it available when using reflection.
