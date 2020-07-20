@@ -7,3 +7,6 @@ StartupObject = "JSON_Beef_Test.Program"
 
 [Configs.Debug.Win64]
 PostBuildCmds = ["Execute(\"powershell.exe -Command Copy-Item -Recurse -Force $(ProjectDir)/json $(TargetDir)\")"]
+
+[Configs.Test.Win64]
+PostBuildCmds = ["Execute(\"powershell.exe -Command Copy-Item -Recurse -Force $(ProjectDir)/json $(TargetDir)\")"]
