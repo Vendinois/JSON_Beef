@@ -164,6 +164,7 @@ namespace JSON_Beef.Serialization
 					{
 						return .Err(.CANNOT_ASSIGN_VALUE);
 					}
+					continue;
 				}
 
 				if (TypeChecker.IsUserObject(paramType) && (paramType.CreateObject() case .Ok(let innerObject)))
@@ -176,6 +177,7 @@ namespace JSON_Beef.Serialization
 					{
 						return .Err(.CANNOT_ASSIGN_VALUE);
 					}
+					continue;
 				}
 
 				if (TypeChecker.IsPrimitive(paramType))

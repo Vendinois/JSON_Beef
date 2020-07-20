@@ -816,7 +816,7 @@ namespace JSON_Beef
 				}
 				else if (c == '[' && (!lookForKey))
 				{
-					i++;
+					//i++;
 					let str = scope String(&json[i]);
 					var outArr = scope JSONArray();
 
