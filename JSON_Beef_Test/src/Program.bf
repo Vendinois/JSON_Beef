@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.IO;
 using JSON_Beef;
+using JSON_Beef.Serialization;
 
 namespace JSON_Beef_Test
 {
@@ -433,15 +434,15 @@ namespace JSON_Beef_Test
 
 				json.ToString(str);
 
-				let deserializedAuthor = JSONDeserializer.Deserialize<Author>(str);
+				let deserializedAuthor = scope Author();
+				let res = JsonDeserialize.Deserialize<Author>(str, deserializedAuthor);
 
-				switch (deserializedAuthor)
+				switch (res)
 				{
 				case .Err(let err):
 					Runtime.Assert(false, "JSON Serializing failed #1");
 				case .Ok(let val):
 					Runtime.Assert(ObjectsMatch(author, deserializedAuthor), "JSON Serializing failed #2");
-					delete deserializedAuthor.Value;
 				}
 
 				delete json;
@@ -474,15 +475,27 @@ namespace JSON_Beef_Test
 			author.Books.Add(new Book("Flowers for Algernon"));
 			author.Books.Add(new Book("Another book"));
 
-			let res = JSONDeserializer.Deserialize<Author>(json);
+			let deserializedAuthor = scope Author();
+			var res = JsonDeserialize.Deserialize<Author>(json, deserializedAuthor);
 
 			switch (res)
 			{
 			case .Err(let err):
 				Runtime.Assert(false, "JSON Deserializing failed #1");
-			case .Ok(let parsedObj):
-				Runtime.Assert(ObjectsMatch(author, parsedObj));
-				delete parsedObj;
+			case .Ok:
+				Runtime.Assert(ObjectsMatch(author, deserializedAuthor), "JSON Deserializing failed #1");
+			}
+
+			let deserializedTest = scope TestClass();
+			let jsonTest = "{\"MultipleList\": [[\"1\", \"2\"], [\"3\", \"4\"], [\"5\", \"6\"]]}";
+			res = JsonDeserialize.Deserialize<TestClass>(jsonTest, deserializedTest);
+
+			switch (res)
+			{
+			case .Err(let err):
+				Runtime.Assert(false, "JSON Deserializing failed #2");
+			case .Ok:
+				Runtime.Assert(deserializedTest.MultipleList.Count == 3, "JSON Deserializing failed #2");
 			}
 
 			Console.WriteLine("JSONDeserializing tests passed");

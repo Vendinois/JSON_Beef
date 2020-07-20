@@ -14,7 +14,8 @@ namespace JSON_Beef
 			ERROR_PARSING,
 			CANNOT_ASSIGN_VALUE,
 			FIELD_NOT_FOUND,
-			INVALID_FIELD_TYPE
+			INVALID_FIELD_TYPE,
+			INVALID_JSON
 		}
 
 		public static Result<T, DESERIALIZE_ERRORS> Deserialize<T>(String json) where T: new, delete
@@ -783,7 +784,7 @@ namespace JSON_Beef
 						return .Err(.ERROR_PARSING);
 					}
 				default:
-					if (paramType.IsObject && (jsonArray.Get<JSONObject>(i) case .Ok(let val)))
+					if (paramType.IsObject)
 					{
 						let generic = fieldType as SpecializedGenericType;
 						let genericType = generic.GetGenericArg(0) as TypeInstance;
@@ -800,14 +801,21 @@ namespace JSON_Beef
 
 						var innerObj = innerObjRes.Value;
 
-						if ((DeserializeObjectInternal(val, innerObj) case .Ok) &&
-							(addMethod.Invoke(fieldValue, innerObj) case .Ok))
+						if (IsList(paramType))
 						{
-							continue;
+							
 						}
-						else
+						else if (jsonArray.Get<JSONObject>(i) case .Ok(let val))
 						{
-							return .Err(.CANNOT_ASSIGN_VALUE);
+							if ((DeserializeObjectInternal(val, innerObj) case .Ok) &&
+								(addMethod.Invoke(fieldValue, innerObj) case .Ok))
+							{
+								continue;
+							}
+							else
+							{
+								return .Err(.CANNOT_ASSIGN_VALUE);
+							}
 						}
 					}
 					else

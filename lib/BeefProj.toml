@@ -6,6 +6,8 @@ Name = "JSON_Beef"
 
 [[Project.DistinctOptions]]
 Filter = "System.Collections.List<*>"
-ReflectAlwaysInclude = "AssumeInstantiated"
+ReflectAlwaysInclude = "IncludeAll"
 ReflectStaticMethods = true
 ReflectNonStaticMethods = true
+ReflectConstructors = true
+ReflectMethodFilter = "__BfCtor; Add"

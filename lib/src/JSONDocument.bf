@@ -106,6 +106,16 @@ namespace JSON_Beef
 			return array;
 		}
 
+		public Result<void, JSON_ERRORS> ParseArray(String json, ref JSONArray array)
+		{
+			if (ParseArrayInternal(json, ref array) case .Err(let err))
+			{
+				return .Err(err);
+			}
+
+			return .Ok;
+		}
+
 		public Result<JSONObject, JSON_ERRORS> ParseObject(String json)
 		{
 			var object = new JSONObject();
@@ -115,6 +125,16 @@ namespace JSON_Beef
 				return .Err(err);
 			}
 			return object;
+		}
+
+		public Result<void, JSON_ERRORS> ParseObject(String json, ref JSONObject object)
+		{
+			if (ParseObjectInternal(json, ref object) case .Err(let err))
+			{
+				return .Err(err);
+			}
+
+			return .Ok;
 		}
 
 		private Result<int, JSON_ERRORS> ParseString(String json, String outString)
