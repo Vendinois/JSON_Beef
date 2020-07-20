@@ -1,8 +1,9 @@
 using System;
 using System.Collections;
 using System.IO;
-using JSON_Beef;
 using JSON_Beef.Serialization;
+using JSON_Beef.Util;
+using JSON_Beef.Types;
 
 namespace JSON_Beef_Test
 {
@@ -435,7 +436,7 @@ namespace JSON_Beef_Test
 				json.ToString(str);
 
 				let deserializedAuthor = scope Author();
-				let res = JsonDeserialize.Deserialize<Author>(str, deserializedAuthor);
+				let res = JSONDeserializer.Deserialize<Author>(str, deserializedAuthor);
 
 				switch (res)
 				{
@@ -476,7 +477,7 @@ namespace JSON_Beef_Test
 			author.Books.Add(new Book("Another book"));
 
 			let deserializedAuthor = scope Author();
-			var res = JsonDeserialize.Deserialize<Author>(json, deserializedAuthor);
+			var res = JSONDeserializer.Deserialize<Author>(json, deserializedAuthor);
 
 			switch (res)
 			{
@@ -488,7 +489,7 @@ namespace JSON_Beef_Test
 
 			let deserializedTest = scope TestClass();
 			let jsonTest = "{\"MultipleList\": [[\"1\", \"2\"], [\"3\", \"4\"], [\"5\", \"6\"]]}";
-			res = JsonDeserialize.Deserialize<TestClass>(jsonTest, deserializedTest);
+			res = JSONDeserializer.Deserialize<TestClass>(jsonTest, deserializedTest);
 
 			switch (res)
 			{

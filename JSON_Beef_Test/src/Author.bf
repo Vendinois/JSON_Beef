@@ -1,6 +1,6 @@
 using System;
 using System.Collections;
-using JSON_Beef;
+using JSON_Beef.Attributes;
 
 namespace JSON_Beef_Test
 {
