@@ -8,8 +8,8 @@ namespace JSON_Beef_Test
 	[Reflect]
 	public class Person
 	{
-		public String FirstName;
-		public String LastName;
+		public String FirstName = null ~ delete _;
+		public String LastName = null ~ delete _;
 
 		[IgnoreSerialize]
 		public int Age;
@@ -22,27 +22,24 @@ namespace JSON_Beef_Test
 		public int Id;
 		public float Test;
 		public bool Known;
-		public List<Book> Books = new List<Book>() ~ DeleteContainerAndItems!(_);
-		public List<String> Publishers = new List<String>() ~ DeleteContainerAndItems!(_);
+		public List<Book> Books = null ~ DeleteContainerAndItems!(_);
+		public List<String> Publishers = null ~ DeleteContainerAndItems!(_);
 	}
 
 	[AlwaysInclude(AssumeInstantiated=true, IncludeAllMethods=true)]
 	[Reflect]
 	public class Book
 	{
-		public String Name;
+		public String Name = null ~ delete _;
 
-		public this(String name = "Book")
+		public this()
 		{
-			Name = new String(name);
+
 		}
 
-		public ~this()
+		public this(String name)
 		{
-			if (Name != null)
-			{
-				delete Name;
-			}
+			Name = new String(name);
 		}
 
 		public void Test()
