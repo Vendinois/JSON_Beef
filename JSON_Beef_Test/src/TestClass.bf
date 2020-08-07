@@ -7,6 +7,13 @@ namespace JSON_Beef_Test
 	[Reflect]
 	public class TestClass
 	{
-		public List<List<String>> MultipleList = new List<List<String>>();
+		public List<List<String>> MultipleList = null ~ {
+			if (_ != null)
+			{
+				for (var value in _)
+					DeleteContainerAndItems!(value);
+				delete _;
+			}
+		};
 	}
 }
