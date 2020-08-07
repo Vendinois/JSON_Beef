@@ -24,13 +24,6 @@ namespace JSON_Beef_Test
 		public bool Known;
 		public List<Book> Books = new List<Book>() ~ DeleteContainerAndItems!(_);
 		public List<String> Publishers = new List<String>() ~ DeleteContainerAndItems!(_);
-
-		public this(String firstName = "", String lastName = "", int age = 0)
-		{
-			FirstName = firstName;
-			LastName = lastName;
-			Age = age;
-		}
 	}
 
 	[AlwaysInclude(AssumeInstantiated=true, IncludeAllMethods=true)]

@@ -421,7 +421,10 @@ namespace JSON_Beef_Test
 		[Test]
 		static void TestJsonSerializing()
 		{
-			let author = scope Author("Jonathan", "Racaud", 25);
+			let author = scope Author();
+			author.FirstName = "Jonathan";
+			author.LastName = "Racaud";
+			author.Age = 25;
 			author.Id = 1;
 			author.Test = 25.4f;
 			author.Known = false;
@@ -474,7 +477,10 @@ namespace JSON_Beef_Test
 		static void TestJsonDeserializing()
 		{
 			let json = "{\"Id\": 256, \"Test\": 4.2, \"Known\": false, \"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
-			let author = scope Author("Jonathan", "Racaud", 25);
+			let author = scope Author();
+			author.FirstName = "Jonathan";
+			author.LastName = "Racaud";
+			author.Age = 25;
 			author.Id = 256;
 			author.Test = 4.2f;
 			author.Known = false;
