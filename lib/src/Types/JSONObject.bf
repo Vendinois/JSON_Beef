@@ -91,6 +91,11 @@ namespace JSON_Beef.Types
 						return .Ok(ret);
 					}
 
+					if (value.Get<Object>() == null)
+					{
+						return default(T);
+					}
+
 					return .Err(.INVALID_RETURN_TYPE);
 				}
 

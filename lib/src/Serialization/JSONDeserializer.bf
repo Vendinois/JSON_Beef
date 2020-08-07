@@ -631,7 +631,10 @@ namespace JSON_Beef.Serialization
 			case typeof(String):
 				if (jsonObj.Get<String>(key) case .Ok(let val))
 				{
-					field.SetValue(obj, new String(val));
+					if (val == null)
+						field.SetValue(obj, null);
+					else
+						field.SetValue(obj, new String(val));
 				}
 				else
 				{
