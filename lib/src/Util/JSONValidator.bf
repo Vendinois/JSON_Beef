@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 
-namespace JSON_Beef
+namespace JSON_Beef.Util
 {
 	public class JSONValidator
 	{

@@ -1,6 +1,6 @@
 using System;
 using System.Collections;
-using JSON_Beef;
+using JSON_Beef.Attributes;
 
 namespace JSON_Beef_Test
 {
@@ -19,8 +19,11 @@ namespace JSON_Beef_Test
 	[Reflect]
 	public class Author: Person
 	{
-		public JsonList<Book> Books = new JsonList<Book>() ~ DeleteContainerAndItems!(_);
-		public JsonList<String> Publishers = new JsonList<String>() ~ delete _;
+		public int Id;
+		public float Test;
+		public bool Known;
+		public List<Book> Books = new List<Book>() ~ DeleteContainerAndItems!(_);
+		public List<String> Publishers = new List<String>() ~ DeleteContainerAndItems!(_);
 
 		public this(String firstName = "", String lastName = "", int age = 0)
 		{
@@ -38,7 +41,15 @@ namespace JSON_Beef_Test
 
 		public this(String name = "Book")
 		{
-			Name = name;
+			Name = new String(name);
+		}
+
+		public ~this()
+		{
+			if (Name != null)
+			{
+				delete Name;
+			}
 		}
 
 		public void Test()
