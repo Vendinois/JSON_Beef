@@ -423,7 +423,7 @@ namespace JSON_Beef_Test
 		{
 			let author = scope Author();
 			author.FirstName = new String("Jonathan");
-			author.LastName = new String("Racaud");
+			//author.LastName = new String("Racaud");
 			author.Age = 25;
 			author.Id = 1;
 			author.Test = 25.4f;

@@ -250,7 +250,7 @@ namespace JSON_Beef.Types
 				case typeof(JSONArray):
 					variant.Get<JSONArray>().ToString(tempStr);
 				default:
-					tempStr.Set(String.Empty);
+					tempStr.Set("null");
 				}
 				//str.Append(tempStr);
 
