@@ -6,16 +6,16 @@ namespace JSON_Beef.Types
 {
 	public class JSONObject
 	{
-		private Dictionary<String, Variant> dictionary;
+		private Dictionary<String, (Variant variant, bool isPrimitive)> dictionary;
 
 		public this()
 		{
-			dictionary = new Dictionary<String, Variant>();
+			dictionary = new Dictionary<String, (Variant variant, bool isPrimitive)>();
 		}
 
 		public this(JSONObject obj)
 		{
-			dictionary = new Dictionary<String, Variant>();
+			dictionary = new Dictionary<String, (Variant variant, bool isPrimitive)>();
 
 			var keys = obj.dictionary.Keys;
 
@@ -31,12 +31,12 @@ namespace JSON_Beef.Types
 				case typeof(JSONArray):
 					Add(key, value.Get<JSONArray>());
 				case typeof(String):
-					Add(key, value.Get<String>());
+					Add(key, value.Get<String>(), obj.dictionary[key].isPrimitive);
 				default:
 					if (value.Get<Object>() == null)
 					{
 						let k = new String(key);
-						dictionary.Add(k, Variant.Create(default(Object)));
+						dictionary.Add(k, (Variant.Create(default(Object)), true));
 					}
 				}
 			}
@@ -46,9 +46,9 @@ namespace JSON_Beef.Types
 		{
 			for (var item in dictionary)
 			{
-				if (item.value.HasValue)
+				if (item.value.variant.HasValue)
 				{
-					item.value.Dispose();
+					item.value.variant.Dispose();
 				}
 				delete item.key;
 			}
@@ -65,18 +65,18 @@ namespace JSON_Beef.Types
 				let value = dictionary[key];
 				let type = typeof(T);
 
-				if (type.IsPrimitive && (value.VariantType == typeof(String)))
+				if (type.IsPrimitive && (value.variant.VariantType == typeof(String)))
 				{
 					if (type == typeof(bool))
 					{
-						bool res = JSONUtil.ParseBool(value.Get<String>());
+						bool res = JSONUtil.ParseBool(value.variant.Get<String>());
 						T outVal = default;
 						Internal.MemCpy(&outVal, &res, sizeof(bool));
 						return .Ok(outVal);
 					}
 					else
 					{
-						var res = JSONUtil.ParseNumber<T>(value.Get<String>());
+						var res = JSONUtil.ParseNumber<T>(value.variant.Get<String>());
 						T outVal = default;
 						Internal.MemCpy(&outVal, &res, type.Size);
 						return .Ok(outVal);
@@ -85,13 +85,13 @@ namespace JSON_Beef.Types
 
 				if ((typeof(T) == typeof(JSONObject)) || (typeof(T) == typeof(JSONArray)) || (typeof(T) == typeof(String)))
 				{
-					if (value.VariantType == typeof(T))
+					if (value.variant.VariantType == typeof(T))
 					{
-						T ret = value.Get<T>();
+						T ret = value.variant.Get<T>();
 						return .Ok(ret);
 					}
 
-					if (value.Get<Object>() == null)
+					if (value.variant.Get<Object>() == null)
 					{
 						return default(T);
 					}
@@ -99,7 +99,7 @@ namespace JSON_Beef.Types
 					return .Err(.INVALID_RETURN_TYPE);
 				}
 
-				if (value.Get<Object>() == null)
+				if (value.variant.Get<Object>() == null)
 				{
 					return default(T);
 				}	
@@ -114,9 +114,9 @@ namespace JSON_Beef.Types
 			{
 				let value = dictionary[key];
 
-				if (value.VariantType == type)
+				if (value.variant.VariantType == type)
 				{
-					let ret = value.Get<Object>();
+					let ret = value.variant.Get<Object>();
 					return .Ok(ret);
 				}
 
@@ -128,7 +128,7 @@ namespace JSON_Beef.Types
 
 		public Variant GetVariant(String key)
 		{
-			return dictionary[key];
+			return dictionary[key].variant;
 		}
 
 		public void Add<T>(String key, Object val)
@@ -136,7 +136,7 @@ namespace JSON_Beef.Types
 			if (val == null)
 			{
 				let k = new String(key);
-				dictionary.Add(k, Variant.Create(default(T)));
+				dictionary.Add(k, (Variant.Create(default(T)), false));
 				return;
 			}
 
@@ -147,7 +147,7 @@ namespace JSON_Beef.Types
 				let str = scope String();
 				val.ToString(str);
 				str.ToLower();
-				Add(key, str);
+				Add(key, str, true);
 				return;
 			}
 
@@ -158,12 +158,12 @@ namespace JSON_Beef.Types
 			case typeof(JSONArray):
 				Add(key, (JSONArray)val);
 			case typeof(String):
-				Add(key, (String)val);
+				Add(key, (String)val, false);
 			case typeof(bool):
 				let str = scope String();
 				bool b = (bool)val;
 				b.ToString(str);
-				Add(key, str);
+				Add(key, str, true);
 			}
 		}
 
@@ -205,25 +205,25 @@ namespace JSON_Beef.Types
 			return false;
 		}
 
-		private void Add(String key, String val)
+		private void Add(String key, String val, bool IsPrimitive)
 		{
 			let k = new String(key);
 			let v = new String(val);
-			dictionary.Add(k, Variant.Create(v, true));
+			dictionary.Add(k, (Variant.Create(v, true), IsPrimitive));
 		}
 
 		private void Add(String key, JSONObject val)
 		{
 			let k = new String(key);
 			let v = new JSONObject(val);
-			dictionary.Add(k, Variant.Create(v, true));
+			dictionary.Add(k, (Variant.Create(v, true), false));
 		}
 
 		private void Add(String key, JSONArray val)
 		{
 			let k = new String(key);
 			let v = new JSONArray(val);
-			dictionary.Add(k, Variant.Create(v, true));
+			dictionary.Add(k, (Variant.Create(v, true), false));
 		}
 
 		public override void ToString(String str)
@@ -241,14 +241,17 @@ namespace JSON_Beef.Types
 
 				let variant = dictionary[currentKey];
 
-				switch (variant.VariantType)
+				switch (variant.variant.VariantType)
 				{
 				case typeof(String):
-					tempStr.AppendF("\"{}\"", variant.Get<String>());
+					if (variant.isPrimitive)
+						tempStr.AppendF("{}", variant.variant.Get<String>());
+					else
+						tempStr.AppendF("\"{}\"", variant.variant.Get<String>());
 				case typeof(JSONObject):
-					variant.Get<JSONObject>().ToString(tempStr);
+					variant.variant.Get<JSONObject>().ToString(tempStr);
 				case typeof(JSONArray):
-					variant.Get<JSONArray>().ToString(tempStr);
+					variant.variant.Get<JSONArray>().ToString(tempStr);
 				default:
 					tempStr.Set("null");
 				}
