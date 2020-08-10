@@ -48,16 +48,60 @@ namespace JSON_Beef.Serialization
 
 			let jsonArray = new JSONArray();
 			let list = (List<Object>*)&object;
+			let listType = object.GetType() as SpecializedGenericType;
+			let itemType = listType.GetGenericArg(0);
 
-			for (var item in *list)
+			for (int i = 0; i < (*list).Count; i++)
 			{
-				if (item == null)
+				if (itemType.IsPrimitive || itemType == typeof(bool) || itemType == typeof(String))
+				{
+					switch (itemType)
+					{
+					case typeof(String):
+						jsonArray.Add<String>((*(List<String>*)list)[i]);
+					case typeof(int):
+						jsonArray.Add<int>((*(List<int>*)list)[i]);
+					case typeof(int8):
+						jsonArray.Add<int8>((*(List<int8>*)list)[i]);
+					case typeof(int16):
+						jsonArray.Add<int16>((*(List<int16>*)list)[i]);
+					case typeof(int32):
+						jsonArray.Add<int32>((*(List<int32>*)list)[i]);
+					case typeof(int64):
+						jsonArray.Add<int64>((*(List<int64>*)list)[i]);
+					case typeof(uint):
+						jsonArray.Add<uint>((*(List<uint>*)list)[i]);
+					case typeof(uint8):
+						jsonArray.Add<uint8>((*(List<uint8>*)list)[i]);
+					case typeof(uint16):
+						jsonArray.Add<uint16>((*(List<uint16>*)list)[i]);
+					case typeof(uint32):
+						jsonArray.Add<uint32>((*(List<uint32>*)list)[i]);
+					case typeof(uint64):
+						jsonArray.Add<uint64>((*(List<uint64>*)list)[i]);
+					case typeof(char8):
+						jsonArray.Add<char8>((*(List<char8>*)list)[i]);
+					case typeof(char16):
+						jsonArray.Add<char16>((*(List<char16>*)list)[i]);
+					case typeof(char32):
+						jsonArray.Add<char32>((*(List<char32>*)list)[i]);
+					case typeof(float):
+						jsonArray.Add<float>((*(List<float>*)list)[i]);
+					case typeof(double):
+						jsonArray.Add<double>((*(List<double>*)list)[i]);
+					case typeof(bool):
+						jsonArray.Add<bool>((*(List<bool>*)list)[i]);
+					default:
+						return .Err;
+					}
+				}
+				else if ((*list)[i] == null)
 				{
 					jsonArray.Add<Object>(null);
 				}
-				else if (IsList(item))
+				else if (IsList((*list)[i]))
 				{
-					let res = Serialize<JSONArray>(ref item);
+					let res = Serialize<JSONArray>(ref (*list)[i]);
 
 					if (res == .Err)
 					{
@@ -69,55 +113,15 @@ namespace JSON_Beef.Serialization
 				}
 				else
 				{
-					let itemType = item.GetType();
+					let res = Serialize<JSONObject>((*list)[i]);
 
-					switch (itemType)
+					if (res == .Err)
 					{
-					case typeof(String):
-						jsonArray.Add<String>(item as String);
-					case typeof(int):
-						jsonArray.Add<int>((int)item);
-					case typeof(int8):
-						jsonArray.Add<int8>((int8)item);
-					case typeof(int16):
-						jsonArray.Add<int16>((int16)item);
-					case typeof(int32):
-						jsonArray.Add<int32>((int32)item);
-					case typeof(int64):
-						jsonArray.Add<int64>((int64)item);
-					case typeof(uint):
-						jsonArray.Add<uint>((uint)item);
-					case typeof(uint8):
-						jsonArray.Add<uint8>((uint8)item);
-					case typeof(uint16):
-						jsonArray.Add<uint16>((uint16)item);
-					case typeof(uint32):
-						jsonArray.Add<uint32>((uint32)item);
-					case typeof(uint64):
-						jsonArray.Add<uint64>((uint64)item);
-					case typeof(char8):
-						jsonArray.Add<char8>((char8)item);
-					case typeof(char16):
-						jsonArray.Add<char16>((char16)item);
-					case typeof(char32):
-						jsonArray.Add<char32>((char32)item);
-					case typeof(float):
-						jsonArray.Add<float>((float)item);
-					case typeof(double):
-						jsonArray.Add<double>((float)item);
-					case typeof(bool):
-						jsonArray.Add<bool>((bool)item);
-					default:
-						let res = Serialize<JSONObject>(item);
-
-						if (res == .Err)
-						{
-							return .Err;
-						}
-
-						jsonArray.Add<JSONObject>(res.Value);
-						delete res.Value;
+						return .Err;
 					}
+
+					jsonArray.Add<JSONObject>(res.Value);
+					delete res.Value;
 				}
 			}
 
