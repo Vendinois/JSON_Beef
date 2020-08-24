@@ -10,4 +10,12 @@ ReflectAlwaysInclude = "IncludeAll"
 ReflectStaticMethods = true
 ReflectNonStaticMethods = true
 ReflectConstructors = true
-ReflectMethodFilter = "__BfCtor; Add"
+ReflectMethodFilter = "__BfCtor;Add"
+
+[[Project.DistinctOptions]]
+Filter = "System.String"
+ReflectAlwaysInclude = "AssumeInstantiated"
+ReflectStaticMethods = true
+ReflectNonStaticMethods = true
+ReflectConstructors = true
+ReflectMethodFilter = "__BfCtor;Set"

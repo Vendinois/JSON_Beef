@@ -8,8 +8,8 @@ namespace JSON_Beef_Test
 	[Reflect]
 	public class Person
 	{
-		public String FirstName;
-		public String LastName;
+		public String FirstName = new .() ~ delete _;
+		public String LastName = new .() ~ delete _;
 
 		[IgnoreSerialize]
 		public int Age;
@@ -27,8 +27,8 @@ namespace JSON_Beef_Test
 
 		public this(String firstName = "", String lastName = "", int age = 0)
 		{
-			FirstName = firstName;
-			LastName = lastName;
+			FirstName.Set(firstName);
+			LastName.Set(lastName);
 			Age = age;
 		}
 	}

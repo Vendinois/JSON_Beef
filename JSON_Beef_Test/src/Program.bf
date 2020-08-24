@@ -578,11 +578,15 @@ namespace JSON_Beef_Test
 				switch (res)
 				{
 				case .Err(let err):
-					Test.Assert(false, "JSON Serializing failed #1");
+					Test.Assert(false, "JSON Struct Test failed #1");
 				case .Ok(let val):
-					Test.Assert(CarsMatch(car, deserializedCar), "JSON Serializing failed #2");
+					Test.Assert(CarsMatch(car, deserializedCar), "JSON Struct Test failed #2");
 				}
 
+				DeleteContainerAndItems!(car.Sellers);
+
+				DeleteContainerAndItems!(deserializedCar.Sellers);
+				delete deserializedCar.Name;
 				delete json;
 			}
 

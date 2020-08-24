@@ -29,7 +29,7 @@ namespace JSON_Beef.Serialization
 
 		public static Result<void, DESERIALIZE_ERRORS> Deserialize<T>(String jsonString, ref T object) where T: struct where T: new
 		{
-			var obj = new Object();
+			var obj = scope Object();
 			obj = object;
 			let res = Deserialize(jsonString, obj, typeof(T));
 
@@ -89,20 +89,28 @@ namespace JSON_Beef.Serialization
 			let type = obj.GetType() as TypeInstance;
 			let fields = type.GetFields();
 
-			var str = scope String();
 			for (var field in fields)
 			{
-				str.Clear();
-				field.FieldType.GetName(str);
-				Console.WriteLine("{} -- {}", field.Name, str);
 				if (field.FieldType.IsObject && (field.GetValue(obj) case .Ok(let val)))
 				{
 					if (val.HasValue)
 					{
+						InitObject(val.Get<Object>());
 						continue;
 					}
 
-					let valueRes = field.FieldType.CreateObject();
+					// I need to make this a specific case as the CreateObject method do not find the
+					// default parameterless constructor. Maybe it comes from the configuration of the
+					// reflection system in JSON_Beef's configuration.
+					var valueRes = Result<Object>();
+					if (typeof(String) == field.FieldType)
+					{
+						valueRes = .Ok(new String());
+					}
+					else
+					{
+						valueRes = field.FieldType.CreateObject();
+					}
 
 					if (valueRes != .Err)
 					{
@@ -715,6 +723,7 @@ namespace JSON_Beef.Serialization
 		{
 			let type = field.FieldType;
 			let key = scope String(field.Name);
+
 
 			if ((type.CreateObject() case .Ok(let fieldObject)) &&
 				(jsonObject.Get<JSONObject>(key) case .Ok(let val)))

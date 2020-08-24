@@ -9,7 +9,7 @@ namespace JSON_Beef_Test
 	{
 		public int Age;
 		public float Speed;
-		public String Name = new .();
+		public String Name;
 
 		public List<String> Sellers;
 	}
