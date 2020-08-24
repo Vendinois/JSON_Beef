@@ -17,10 +17,33 @@ namespace JSON_Beef.Serialization
 			INVALID_FIELD_TYPE,
 			INVALID_JSON,
 			OBJECT_IS_NULL,
-			CANNOT_ASSIGN_LIST_TO_OBJECT
+			CANNOT_ASSIGN_LIST_TO_OBJECT,
+			CANNOT_INSTANTIATE_OBJECT_FIELDS,
+			ERROR_DESERIALIZATION
 		}
 
-		public static Result<void, DESERIALIZE_ERRORS> Deserialize<T>(String jsonString, T object)
+		public static Result<void, DESERIALIZE_ERRORS> Deserialize<T>(String jsonString, T object) where T: class
+		{
+			return Deserialize(jsonString, object, typeof(T));
+		}
+
+		public static Result<void, DESERIALIZE_ERRORS> Deserialize<T>(String jsonString, ref T object) where T: struct where T: new
+		{
+			var obj = new Object();
+			obj = object;
+			let res = Deserialize(jsonString, obj, typeof(T));
+
+			switch (res)
+			{
+			case .Err(let err):
+				return .Err(err);
+			case .Ok(let val):
+				object = (T)obj;
+				return .Ok;
+			}
+		}
+
+		private static Result<void, DESERIALIZE_ERRORS> Deserialize(String jsonString, Object object, Type type)
 		{
 			if (!JSONValidator.IsValidJson(jsonString))
 			{
@@ -40,6 +63,11 @@ namespace JSON_Beef.Serialization
 				var jsonObject = scope JSONObject();
 				doc.ParseObject(jsonString, ref jsonObject);
 
+				if (InitObject(object) case .Err)
+				{
+					return .Err(.CANNOT_INSTANTIATE_OBJECT_FIELDS);
+				}
+
 				if (!AreTypeMatching(jsonObject, object))
 				{
 					return .Err(.JSON_NOT_MATCHING_OBJECT);
@@ -54,6 +82,40 @@ namespace JSON_Beef.Serialization
 			case .UNKNOWN:
 				return .Err(.INVALID_JSON);
 			}
+		}
+
+		private static Result<void> InitObject(Object obj)
+		{
+			let type = obj.GetType() as TypeInstance;
+			let fields = type.GetFields();
+
+			var str = scope String();
+			for (var field in fields)
+			{
+				str.Clear();
+				field.FieldType.GetName(str);
+				Console.WriteLine("{} -- {}", field.Name, str);
+				if (field.FieldType.IsObject && (field.GetValue(obj) case .Ok(let val)))
+				{
+					if (val.HasValue)
+					{
+						continue;
+					}
+
+					let valueRes = field.FieldType.CreateObject();
+
+					if (valueRes != .Err)
+					{
+					 	field.SetValue(obj, valueRes.Value);
+					}
+					else
+					{
+						return .Err;
+					}
+				}
+			}
+
+			return .Ok;
 		}
 
 		// The object corresponds to the jsonObject

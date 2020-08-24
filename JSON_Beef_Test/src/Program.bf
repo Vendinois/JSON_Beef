@@ -27,6 +27,7 @@ namespace JSON_Beef_Test
 			TestJsonParsing();
 			TestJsonSerializing();
 			TestJsonDeserializing();
+			TestStruct();
 
 			Console.WriteLine("Press any [enter] to exit.");
 			Console.In.Read();
@@ -551,6 +552,68 @@ namespace JSON_Beef_Test
 			}
 
 			return ((missingBooks == 0) && (missingPublishers == 0));
+		}
+
+		[Test]
+		static void TestStruct()
+		{
+			var car = Car();
+			car.Age = 25;
+			car.Name = "DB9";
+			car.Sellers = new List<String>();
+			car.Sellers.Add(new String("Aston Martin"));
+
+			let resObj = JSONSerializer.Serialize<JSONObject>(car);
+
+			if (resObj != .Err)
+			{
+				let json = resObj.Value;
+				let str = scope String();
+
+				json.ToString(str);
+
+				var deserializedCar = Car();
+				let res = JSONDeserializer.Deserialize<Car>(str, ref deserializedCar);
+
+				switch (res)
+				{
+				case .Err(let err):
+					Test.Assert(false, "JSON Serializing failed #1");
+				case .Ok(let val):
+					Test.Assert(CarsMatch(car, deserializedCar), "JSON Serializing failed #2");
+				}
+
+				delete json;
+			}
+
+			Console.WriteLine("JSONSerializing tests passed");
+		}
+
+		static bool CarsMatch(Car a, Car b)
+		{
+			if ((a.Age != b.Age) ||
+				(!a.Name.Equals(b.Name)) ||
+				(a.Sellers.Count != b.Sellers.Count) ||
+				(!a.Speed.Equals(b.Speed)))
+			{
+				return false;
+			}
+
+			var missingSellers = a.Sellers.Count;
+
+			for (var i = 0; i < a.Sellers.Count; i++)
+			{
+				for (var j = 0; j < b.Sellers.Count; j++)
+				{
+					if (a.Sellers[i] == b.Sellers[j])
+					{
+						missingSellers--;
+						break;
+					}
+				}
+			}
+
+			return (missingSellers == 0);
 		}
 	}
 }
