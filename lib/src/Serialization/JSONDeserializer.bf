@@ -706,7 +706,18 @@ namespace JSON_Beef.Serialization
 			case typeof(String):
 				if (jsonObj.Get<String>(key) case .Ok(let val))
 				{
-					field.SetValue(obj, new String(val));
+					//field.SetValue(obj, new String(val));
+					var res = field.GetValue(obj).Value;
+
+					if (res.HasValue)
+					{
+					 	let str = res.Get<String>();
+						str.Set(scope String(val));
+					}
+					else
+					{
+						field.SetValue(obj, new String(val));
+					}
 				}
 				else
 				{
