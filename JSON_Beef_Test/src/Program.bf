@@ -590,7 +590,7 @@ namespace JSON_Beef_Test
 				delete json;
 			}
 
-			Console.WriteLine("JSONSerializing tests passed");
+			Console.WriteLine("JSON Struct tests passed");
 		}
 
 		static bool CarsMatch(Car a, Car b)
