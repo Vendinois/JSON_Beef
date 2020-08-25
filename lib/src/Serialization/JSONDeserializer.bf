@@ -220,7 +220,7 @@ namespace JSON_Beef.Serialization
 
 			let type = object.GetType() as SpecializedGenericType;
 			let addMethod = Try!(type.GetMethod("Add"));
-			let paramType = type.GetGenericArg(0) as TypeInstance;
+			let paramType = type.GetGenericArg(0);// as TypeInstance;
 
 			for (int i = 0; i < jsonArray.Count; i++)
 			{
@@ -422,12 +422,11 @@ namespace JSON_Beef.Serialization
 			return .Ok;
 		}
 
-		private static bool AreTypeMatching(JSONObject jsonObject, Object obj)
+		private static bool AreTypeMatching(JSONObject jsonObject, Type type)
 		{
-			let type = obj.GetType();
 			let fields = type.GetFields();
 
-			if (!AreBaseTypeMatching(jsonObject, obj))
+			if (!AreBaseTypeMatching(jsonObject, type))
 			{
 				return false;
 			}
@@ -439,7 +438,7 @@ namespace JSON_Beef.Serialization
 					continue;
 				}
 
-				if (!HasField(jsonObject, obj, field))
+				if (!HasField(jsonObject, field))
 				{
 					return false;
 				}
@@ -447,9 +446,8 @@ namespace JSON_Beef.Serialization
 			return true;
 		}
 
-		private static bool AreBaseTypeMatching(JSONObject jsonObject, Object obj)
+		private static bool AreBaseTypeMatching(JSONObject jsonObject, Type type)
 		{
-			let type = obj.GetType();
 			let baseType = type.BaseType;
 
 			if (type == baseType)
@@ -466,14 +464,13 @@ namespace JSON_Beef.Serialization
 					continue;
 				}
 
-				let fieldValue = field.GetValue(obj).Get().Get<Object>();
 
-				if (!HasField(jsonObject, obj, field))
+				if (!HasField(jsonObject, field))
 				{
 					return false;
 				}
 
-				if (!AreBaseTypeMatching(jsonObject, fieldValue))
+				if (!AreBaseTypeMatching(jsonObject, field.FieldType))
 				{
 					return false;
 				}
@@ -482,11 +479,10 @@ namespace JSON_Beef.Serialization
 			return true;
 		}
 
-		private static bool HasField(JSONObject jsonObj, Object obj, FieldInfo field)
+		private static bool HasField(JSONObject jsonObj, FieldInfo field)
 		{
 			let fieldName = scope String(field.Name);
-			let fieldVariant = field.GetValue(obj).Value;
-			let fieldVariantType = fieldVariant.VariantType;
+			let fieldVariantType = field.FieldType;
 
 			var hasField = false;
 			if (fieldVariantType.IsPrimitive)
@@ -536,9 +532,7 @@ namespace JSON_Beef.Serialization
 				case typeof(String):
 					hasField = jsonObj.Contains<String>(fieldName);
 				default:
-					let fieldValue = fieldVariant.Get<Object>();
-
-					if (TypeChecker.IsTypeList(fieldValue))
+					if (TypeChecker.IsTypeList(fieldVariantType))
 					{
 						hasField = jsonObj.Contains<JSONArray>(fieldName);
 					}
@@ -706,18 +700,10 @@ namespace JSON_Beef.Serialization
 			case typeof(String):
 				if (jsonObj.Get<String>(key) case .Ok(let val))
 				{
-					//field.SetValue(obj, new String(val));
-					var res = field.GetValue(obj).Value;
-
-					if (res.HasValue)
-					{
-					 	let str = res.Get<String>();
-						str.Set(scope String(val));
-					}
+					if (val == null)
+						field.SetValue(obj, null);
 					else
-					{
 						field.SetValue(obj, new String(val));
-					}
 				}
 				else
 				{
@@ -734,7 +720,6 @@ namespace JSON_Beef.Serialization
 		{
 			let type = field.FieldType;
 			let key = scope String(field.Name);
-
 
 			if ((type.CreateObject() case .Ok(let fieldObject)) &&
 				(jsonObject.Get<JSONObject>(key) case .Ok(let val)))
