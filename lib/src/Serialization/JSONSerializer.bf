@@ -177,7 +177,7 @@ namespace JSON_Beef.Serialization
 		{
 			let fieldName = scope String(field.Name);
 			let fieldVariant = field.GetValue(object).Get();
-			let fieldVariantType = fieldVariant.VariantType;
+			let fieldVariantType = field.FieldType;
 
 			if (fieldVariantType.IsPrimitive)
 			{
@@ -221,13 +221,13 @@ namespace JSON_Beef.Serialization
 			}
 			else if (fieldVariantType.IsObject)
 			{
-				var fieldValue = fieldVariant.Get<Object>();
-
-				if (fieldValue == null)
+				if (!fieldVariant.HasValue)
 				{
 					json.Add<Object>(fieldName, null);
 					return .Ok;
 				}
+
+				var fieldValue = fieldVariant.Get<Object>();
 
 				SerializeObjectBaseTypeInternal(fieldValue, json);
 
@@ -269,6 +269,11 @@ namespace JSON_Beef.Serialization
 
 		private static Result<void> SerializeObjectBaseTypeInternal(Object object, JSONObject json)
 		{
+			if (object == null)
+			{
+				return .Ok;
+			}
+
 			let type = object.GetType();
 			let baseType = type.BaseType;
 
@@ -291,8 +296,8 @@ namespace JSON_Beef.Serialization
 
 				let fieldName = scope String(field.Name);
 				let fieldVariant = field.GetValue(object).Get();
-				let fieldVariantType = fieldVariant.VariantType;
-				var fieldValue = fieldVariant.Get<Object>();
+				let fieldVariantType = field.FieldType;
+				var fieldValue = fieldVariant.HasValue ? fieldVariant.Get<Object>(): null;
 
 				SerializeObjectBaseTypeInternal(fieldValue, json);
 
