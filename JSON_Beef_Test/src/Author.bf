@@ -13,6 +13,12 @@ namespace JSON_Beef_Test
 
 		[IgnoreSerialize]
 		public int Age;
+
+		/*public ~this()
+		{
+			delete FirstName;
+			delete LastName;
+		}*/
 	}
 
 	[AlwaysInclude(AssumeInstantiated=true, IncludeAllMethods=true)]
@@ -22,8 +28,8 @@ namespace JSON_Beef_Test
 		public int Id;
 		public float Test;
 		public bool Known;
-		public List<Book> Books = new List<Book>() ~ DeleteContainerAndItems!(_);
-		public List<String> Publishers = new List<String>() ~ DeleteContainerAndItems!(_);
+		public List<Book> Books = new List<Book>() ~ DeleteContainerAndItems!(Books);
+		public List<String> Publishers = new List<String>() ~ DeleteContainerAndItems!(Publishers);
 
 		public this(String firstName = "", String lastName = "", int age = 0)
 		{
@@ -31,6 +37,12 @@ namespace JSON_Beef_Test
 			LastName.Set(lastName);
 			Age = age;
 		}
+
+		/*public ~this()
+		{
+			DeleteContainerAndItems!(Books);
+			DeleteContainerAndItems!(Publishers);
+		}*/
 	}
 
 	[AlwaysInclude(AssumeInstantiated=true, IncludeAllMethods=true)]

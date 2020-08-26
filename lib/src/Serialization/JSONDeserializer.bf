@@ -91,11 +91,11 @@ namespace JSON_Beef.Serialization
 
 			for (var field in fields)
 			{
-				if (field.FieldType.IsObject && (field.GetValue(obj) case .Ok(let val)))
+				if (field.FieldType.IsObject && (field.GetValue(obj) case .Ok(var variant)))
 				{
-					if (val.HasValue)
+					if (variant.HasValue)
 					{
-						InitObject(val.Get<Object>());
+						InitObject(variant.Get<Object>());
 						continue;
 					}
 
@@ -411,7 +411,8 @@ namespace JSON_Beef.Serialization
 			case typeof(String):
 				if (jsonArray.Get<String>(i) case .Ok(let val))
 				{
-					addMethod.Invoke(obj, new String(val));
+					var str = new String(val);
+					addMethod.Invoke(obj, str);
 				}
 				else
 				{
@@ -706,18 +707,16 @@ namespace JSON_Beef.Serialization
 			case typeof(String):
 				if (jsonObj.Get<String>(key) case .Ok(let val))
 				{
-					//field.SetValue(obj, new String(val));
-					var res = field.GetValue(obj).Value;
+					var str = new String(val);
+					var fieldVariant = field.GetValue(obj).Value;
 
-					if (res.HasValue)
+					if (fieldVariant.HasValue)
 					{
-					 	let str = res.Get<String>();
-						str.Set(scope String(val));
+						// We need to delete the existing field otherwise it creates a memory leak.
+						delete fieldVariant.Get<Object>();
 					}
-					else
-					{
-						field.SetValue(obj, new String(val));
-					}
+
+					field.SetValue(obj, str);
 				}
 				else
 				{
@@ -758,11 +757,9 @@ namespace JSON_Beef.Serialization
 
 		private static Result<void, DESERIALIZE_ERRORS> SetArrayField(FieldInfo field, JSONObject jsonObject, Object obj)
 		{
-			let type = field.FieldType;
 			let key = scope String(field.Name);
 
-			if ((type.CreateObject() case .Ok(let fieldList)) &&
-				(jsonObject.Get<JSONArray>(key) case .Ok(let array)))
+			if (jsonObject.Get<JSONArray>(key) case .Ok(let array))
 			{
 				if (array == null)
 				{
@@ -770,8 +767,14 @@ namespace JSON_Beef.Serialization
 					return .Ok;
 				}
 
-				Try!(DeserializeArray(array, fieldList));
-				field.SetValue(obj, fieldList);
+				var fieldVariant = field.GetValue(obj).Value;
+				if (fieldVariant.HasValue)
+				{
+					delete fieldVariant.Get<Object>();
+					var fieldList = field.FieldType.CreateObject().Value;
+					Try!(DeserializeArray(array, fieldList));
+					field.SetValue(obj, fieldList);
+				}
 			}
 			else
 			{
