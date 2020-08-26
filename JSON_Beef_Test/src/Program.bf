@@ -474,7 +474,7 @@ namespace JSON_Beef_Test
 		[Test]
 		static void TestJsonDeserializing()
 		{
-			let json = "{\"Id\": 256, \"Test\": 4.2, \"Known\": false, \"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
+			let json = "{\"Id\": 256, \"Test\": 4.2, \"Known\": false, \"FirstBook\": {\"Name\": \"Book\"}, \"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
 			let author = scope Author("Jonathan", "Racaud", 25);
 			author.Id = 256;
 			author.Test = 4.2f;
@@ -518,6 +518,7 @@ namespace JSON_Beef_Test
 				((a.LastName != b.LastName)) ||
 				(a.Publishers.Count != b.Publishers.Count) ||
 				(a.Books.Count != b.Books.Count) ||
+				(!a.FirstBook.Name.Equals(b.FirstBook.Name)) ||
 				(a.Id != b.Id) ||
 				!a.Test.Equals(b.Test) ||
 				(a.Known != b.Known))

@@ -731,12 +731,10 @@ namespace JSON_Beef.Serialization
 
 		private static Result<void, DESERIALIZE_ERRORS> SetObjectField(FieldInfo field, JSONObject jsonObject, Object obj)
 		{
-			let type = field.FieldType;
 			let key = scope String(field.Name);
 
 
-			if ((type.CreateObject() case .Ok(let fieldObject)) &&
-				(jsonObject.Get<JSONObject>(key) case .Ok(let val)))
+			if (jsonObject.Get<JSONObject>(key) case .Ok(let val))
 			{
 				if (val == null)
 				{
@@ -744,6 +742,13 @@ namespace JSON_Beef.Serialization
 					return .Ok;
 				}
 
+				var fieldVariant = field.GetValue(obj).Value;
+				if (fieldVariant.HasValue)
+				{
+					delete fieldVariant.Get<Object>();
+				}
+
+				var fieldObject = field.FieldType.CreateObject().Value;
 				Try!(DeserializeObject(val, fieldObject));
 				field.SetValue(obj, fieldObject);
 			}
@@ -771,10 +776,11 @@ namespace JSON_Beef.Serialization
 				if (fieldVariant.HasValue)
 				{
 					delete fieldVariant.Get<Object>();
-					var fieldList = field.FieldType.CreateObject().Value;
-					Try!(DeserializeArray(array, fieldList));
-					field.SetValue(obj, fieldList);
 				}
+
+				var fieldList = field.FieldType.CreateObject().Value;
+				Try!(DeserializeArray(array, fieldList));
+				field.SetValue(obj, fieldList);
 			}
 			else
 			{
