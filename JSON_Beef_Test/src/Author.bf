@@ -32,6 +32,9 @@ namespace JSON_Beef_Test
 		public List<Book> Books = new List<Book>() ~ DeleteContainerAndItems!(Books);
 		public List<String> Publishers = new List<String>() ~ DeleteContainerAndItems!(Publishers);
 
+		[IgnoreSerialize]
+		public static int ToBeIgnored = 42;
+
 		public this(String firstName = "", String lastName = "", int age = 0)
 		{
 			FirstName.Set(firstName);
