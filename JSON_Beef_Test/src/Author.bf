@@ -27,7 +27,7 @@ namespace JSON_Beef_Test
 	{
 		public int Id;
 		public float Test;
-		public bool Known;
+		public static bool Known;
 		public Book FirstBook = new .() ~ delete _;
 		public List<Book> Books = new List<Book>() ~ DeleteContainerAndItems!(Books);
 		public List<String> Publishers = new List<String>() ~ DeleteContainerAndItems!(Publishers);

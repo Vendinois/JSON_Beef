@@ -9,7 +9,7 @@ namespace JSON_Beef.Util
 		{
 			let shouldIgnore = field.GetCustomAttribute<IgnoreSerializeAttribute>();
 
-			return ((shouldIgnore == .Ok) || field.HasFieldFlag(.PrivateScope) || field.HasFieldFlag(.Private));
+			return ((shouldIgnore == .Ok) || FieldHelper.HasFlag(field, .PrivateScope) || FieldHelper.HasFlag(field, .Private));
 		}
 	}
 }

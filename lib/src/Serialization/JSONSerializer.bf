@@ -1,8 +1,9 @@
 using System;
 using System.Collections;
 using System.Reflection;
-using JSON_Beef.Types;
 using JSON_Beef.Attributes;
+using JSON_Beef.Types;
+using JSON_Beef.Util;
 
 namespace JSON_Beef.Serialization
 {
@@ -23,7 +24,7 @@ namespace JSON_Beef.Serialization
 
 			for (var field in fields)
 			{
-				if (ShouldIgnore(field))
+				if (AttributeChecker.ShouldIgnore(field))
 				{
 					continue;
 				}
@@ -166,22 +167,24 @@ namespace JSON_Beef.Serialization
 			return typeName.Equals("List") || typeName.Equals("JsonList");
 		}
 
-		private static bool ShouldIgnore(FieldInfo field)
-		{
-			let shouldIgnore = field.GetCustomAttribute<IgnoreSerializeAttribute>();
-
-			return ((shouldIgnore == .Ok) || field.HasFieldFlag(.PrivateScope) || field.HasFieldFlag(.Private));
-		}
-
 		private static Result<void> SerializeObjectInternal(Object object, FieldInfo field, JSONObject json)
 		{
 			let fieldName = scope String(field.Name);
-			let fieldVariant = field.GetValue(object).Get();
-			let fieldVariantType = fieldVariant.VariantType;
+			let fieldType = field.FieldType;
+			Variant fieldVariant;
 
-			if (fieldVariantType.IsPrimitive)
+			if (FieldHelper.HasFlag(field, .Static))
 			{
-				switch (fieldVariantType)
+				fieldVariant = field.GetValue(null).Get();
+			}
+			else
+			{
+				fieldVariant = field.GetValue(object).Get();
+			}
+
+			if (fieldType.IsPrimitive)
+			{
+				switch (fieldType)
 				{
 				case typeof(int):
 					json.Add<int>(fieldName, fieldVariant.Get<int>());
@@ -219,7 +222,7 @@ namespace JSON_Beef.Serialization
 					return .Err;
 				}
 			}
-			else if (fieldVariantType.IsObject)
+			else if (fieldType.IsObject)
 			{
 				var fieldValue = fieldVariant.Get<Object>();
 
@@ -245,7 +248,7 @@ namespace JSON_Beef.Serialization
 				}
 				else
 				{
-					switch (fieldVariantType)
+					switch (fieldType)
 					{
 					case typeof(String):
 						json.Add<String>(fieldName, (String)fieldValue);
@@ -284,7 +287,7 @@ namespace JSON_Beef.Serialization
 
 			for (var field in fields)
 			{
-				if (ShouldIgnore(field))
+				if (AttributeChecker.ShouldIgnore(field))
 				{
 					continue;
 				}

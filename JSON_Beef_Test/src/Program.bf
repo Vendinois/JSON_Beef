@@ -425,7 +425,8 @@ namespace JSON_Beef_Test
 			let author = scope Author("Jonathan", "Racaud", 25);
 			author.Id = 1;
 			author.Test = 25.4f;
-			author.Known = false;
+			//author.Known = false;
+			Author.Known = true;
 			author.Publishers.Add(new String("GoldenBooks"));
 			author.Publishers.Add(new String("AncientBooks"));
 			author.Publishers.Add(new String("NewBooks"));
@@ -478,7 +479,7 @@ namespace JSON_Beef_Test
 			let author = scope Author("Jonathan", "Racaud", 25);
 			author.Id = 256;
 			author.Test = 4.2f;
-			author.Known = false;
+			//author.Known = false;
 			author.Publishers.Add(new String("GoldenBooks"));
 			author.Publishers.Add(new String("AncientBooks"));
 			author.Publishers.Add(new String("NewBooks"));
@@ -520,8 +521,9 @@ namespace JSON_Beef_Test
 				(a.Books.Count != b.Books.Count) ||
 				(!a.FirstBook.Name.Equals(b.FirstBook.Name)) ||
 				(a.Id != b.Id) ||
-				!a.Test.Equals(b.Test) ||
-				(a.Known != b.Known))
+				!a.Test.Equals(b.Test) //||
+				//(a.Known != b.Known)
+				)
 			{
 				return false;
 			}
