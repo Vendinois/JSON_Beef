@@ -1,14 +1,14 @@
 # JSON_Beef
 A JSON parser library made in the Beef programming language.
 
-Still a work in progress.
+This is still a work in progress.
 
-Todo:
-- JSON String parsing:
-  - Handle unescaped characters in strings as error.
-  - Parse UTF-8 characters e.g.: u0063.
-- Object deserialization:
-  - Create and add to a List<T> object through reflection.
+## Summary
+- [Project Organization](#project-organization)
+- [Adding JSON_Beef to your project](#Adding-JSON_Beef-to-your-project)
+- [Using the library](#Using-the-library)
+- [Important notes](#Important-notes)
+- [Todo](#Todo)
 
 ## Project organization
 This repository consist of two distinct folders:
@@ -17,9 +17,7 @@ This repository consist of two distinct folders:
 
 The JSON_Beef library depends on the Beef Extensions Library that can be found here: [Beef Extensions Library](https://github.com/Jonathan-Racaud/Beef-Extensions-Lib).
 
-## How to use JSON Beef
-
-**Adding JSON_Beef to your project:**
+## Adding JSON_Beef to your project
 1. Clone the Beef Extensions Library in the location of your choice.
 2. Clone the JSON_Beef library in the location of your choice.
 3. In Beef IDE, right click on Workspace->Add existing project.
@@ -31,7 +29,7 @@ The JSON_Beef library depends on the Beef Extensions Library that can be found h
 9. You can now start using the library.
 
 
-**Using the library:**
+## Using the library
 JSON_Beef consists of several objects to manipulate JSON data:
 - JSONDocument: Used to validate and parse a JSON String into either a **JSONObject** or a **JSONArray**
 - JSONObject: Class representing a JSON Object.
@@ -101,7 +99,7 @@ let jsonArray = JSONSerializer.Serialize<JSONArray>(object);
 let str = JSONSerializer.Serialize<String>(object);
 ```
 
-**Deserializing a user defined class (Work in progress):**
+**Deserializing a user defined class:**
 In order to deserialize a user defined type, it must be marked with the following attributes:
 ```c#
 [AlwaysInclude(AssumeInstantiated=true, IncludeAllMethods=true)] // Allows for the type to be created via reflection (used by the Deserializer).
@@ -113,16 +111,10 @@ Now you can deserialize a JSON string into your CustomClass using JSONDeserializ
 let customClass = JSONDeserializer.Deserialize<CustomClass>(json);
 ```
 
-Due to a limitation with the Beef language that do not provide by default reflection for the List<T> type nor a way to add it without modifying the language (from my knowledge), you need to use the JsonList<T> type which is a thin wrapper around the List<T> type providing the necessary reflection capabilities for the Deserialization to work with Lists.
-
-In the future, if the language allows reflection for its List<T> type, then the JsonList class shall be removed.
-
 For more examples about how to use the library you can look at the JSON_Beef_Test project.
 
 ## Important notes
-- The JSON_Beef library can only serialize ```List<T>``` or ```JsonList<T>``` types into JSONArray and only deserialize a JSON array into a ```JsonList<T>```.
-- Because the ```List<T>``` type does not provides its method through reflection, the JSONDeserializer cannot successfully deserialize a JSON Array into its corresponding field of type ```List<T>```. While waiting for a better way of doing it, the ```JsonList<T>``` has been added. See the issue [Working with lists](https://github.com/Jonathan-Racaud/JSON_Beef/issues/2) for more information.
-- When deserializing into a user defined type, the keys inside the JSON object string representation must match the field's name as declared (case sensitive):
+- For the moment, when deserializing into a user defined type, the keys inside the JSON object string representation must match the field's name as declared (case sensitive):
 
 ```c#
 public class Person
@@ -136,3 +128,12 @@ let person = JSONDeserialize<Person>(wrongJson); // Will not yield expected resu
 let rightJson = "{\"FirstName\": \"Jonathan\"}";
 let person = JSONDeserialize<Person>(rightJson); // the person object will successfully be serialized.
 ```
+
+## Todo
+- JSON String parsing:
+  - Handle unescaped characters in strings as error.
+  - Parse UTF-8 characters e.g.: u0063.
+- Reflection based Object deserialization:
+  - Handle Dictionary types.
+  - Handle static fields.
+  - Handle properties.
