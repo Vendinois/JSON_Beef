@@ -550,12 +550,18 @@ namespace JSON_Beef.Serialization
 			let type = field.FieldType;
 			let key = scope String(field.Name);
 
+			var tempObj = obj;
+			if (FieldHelper.HasFlag(field, .Static))
+			{
+				tempObj = null;
+			}
+
 			switch (type)
 			{
 			case typeof(int):
 				if (jsonObj.Get<int>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -564,7 +570,7 @@ namespace JSON_Beef.Serialization
 			case typeof(int8):
 				if (jsonObj.Get<int8>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -573,7 +579,7 @@ namespace JSON_Beef.Serialization
 			case typeof(int16):
 				if (jsonObj.Get<int16>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -582,7 +588,7 @@ namespace JSON_Beef.Serialization
 			case typeof(int32):
 				if (jsonObj.Get<int32>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -591,7 +597,7 @@ namespace JSON_Beef.Serialization
 			case typeof(int64):
 				if (jsonObj.Get<int64>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -600,7 +606,7 @@ namespace JSON_Beef.Serialization
 			case typeof(uint):
 				if (jsonObj.Get<uint>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -609,7 +615,7 @@ namespace JSON_Beef.Serialization
 			case typeof(uint8):
 				if (jsonObj.Get<uint8>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -618,7 +624,7 @@ namespace JSON_Beef.Serialization
 			case typeof(uint16):
 				if (jsonObj.Get<uint16>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -627,7 +633,7 @@ namespace JSON_Beef.Serialization
 			case typeof(uint32):
 				if (jsonObj.Get<uint32>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -636,7 +642,7 @@ namespace JSON_Beef.Serialization
 			case typeof(uint64):
 				if (jsonObj.Get<uint64>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -645,7 +651,7 @@ namespace JSON_Beef.Serialization
 			case typeof(char8):
 				if (jsonObj.Get<char8>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -654,7 +660,7 @@ namespace JSON_Beef.Serialization
 			case typeof(char16):
 				if (jsonObj.Get<char16>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -663,7 +669,7 @@ namespace JSON_Beef.Serialization
 			case typeof(char32):
 				if (jsonObj.Get<char32>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -672,7 +678,7 @@ namespace JSON_Beef.Serialization
 			case typeof(float):
 				if (jsonObj.Get<float>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -681,7 +687,7 @@ namespace JSON_Beef.Serialization
 			case typeof(double):
 				if (jsonObj.Get<double>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -690,7 +696,7 @@ namespace JSON_Beef.Serialization
 			case typeof(bool):
 				if (jsonObj.Get<bool>(key) case .Ok(let val))
 				{
-					 field.SetValue(obj, val);
+					 field.SetValue(tempObj, val);
 				}
 				else
 				{
@@ -700,7 +706,7 @@ namespace JSON_Beef.Serialization
 				if (jsonObj.Get<String>(key) case .Ok(let val))
 				{
 					var str = new String(val);
-					var fieldVariant = field.GetValue(obj).Value;
+					var fieldVariant = field.GetValue(tempObj).Value;
 
 					if (fieldVariant.HasValue)
 					{
@@ -708,7 +714,7 @@ namespace JSON_Beef.Serialization
 						delete fieldVariant.Get<Object>();
 					}
 
-					field.SetValue(obj, str);
+					field.SetValue(tempObj, str);
 				}
 				else
 				{
@@ -725,16 +731,21 @@ namespace JSON_Beef.Serialization
 		{
 			let key = scope String(field.Name);
 
+			var tempObj = obj;
+			if (FieldHelper.HasFlag(field, .Static))
+			{
+				tempObj = null;
+			}
 
 			if (jsonObject.Get<JSONObject>(key) case .Ok(let val))
 			{
 				if (val == null)
 				{
-					field.SetValue(obj, null);
+					field.SetValue(tempObj, null);
 					return .Ok;
 				}
 
-				var fieldVariant = field.GetValue(obj).Value;
+				var fieldVariant = field.GetValue(tempObj).Value;
 				if (fieldVariant.HasValue)
 				{
 					delete fieldVariant.Get<Object>();
@@ -742,7 +753,7 @@ namespace JSON_Beef.Serialization
 
 				var fieldObject = field.FieldType.CreateObject().Value;
 				Try!(DeserializeObject(val, fieldObject));
-				field.SetValue(obj, fieldObject);
+				field.SetValue(tempObj, fieldObject);
 			}
 			else
 			{
@@ -756,15 +767,21 @@ namespace JSON_Beef.Serialization
 		{
 			let key = scope String(field.Name);
 
+			var tempObj = obj;
+			if (FieldHelper.HasFlag(field, .Static))
+			{
+				tempObj = null;
+			}
+
 			if (jsonObject.Get<JSONArray>(key) case .Ok(let array))
 			{
 				if (array == null)
 				{
-					field.SetValue(obj, null);
+					field.SetValue(tempObj, null);
 					return .Ok;
 				}
 
-				var fieldVariant = field.GetValue(obj).Value;
+				var fieldVariant = field.GetValue(tempObj).Value;
 				if (fieldVariant.HasValue)
 				{
 					delete fieldVariant.Get<Object>();
@@ -772,7 +789,7 @@ namespace JSON_Beef.Serialization
 
 				var fieldList = field.FieldType.CreateObject().Value;
 				Try!(DeserializeArray(array, fieldList));
-				field.SetValue(obj, fieldList);
+				field.SetValue(tempObj, fieldList);
 			}
 			else
 			{
