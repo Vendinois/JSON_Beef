@@ -63,11 +63,6 @@ namespace JSON_Beef.Serialization
 				var jsonObject = scope JSONObject();
 				doc.ParseObject(jsonString, ref jsonObject);
 
-				if (InitObject(object) case .Err)
-				{
-					return .Err(.CANNOT_INSTANTIATE_OBJECT_FIELDS);
-				}
-
 				if (!AreTypeMatching(jsonObject, object))
 				{
 					return .Err(.JSON_NOT_MATCHING_OBJECT);
@@ -486,13 +481,12 @@ namespace JSON_Beef.Serialization
 		private static bool HasField(JSONObject jsonObj, Object obj, FieldInfo field)
 		{
 			let fieldName = scope String(field.Name);
-			let fieldVariant = field.GetValue(obj).Value;
-			let fieldVariantType = fieldVariant.VariantType;
+			let fieldType = field.FieldType;
 
 			var hasField = false;
-			if (fieldVariantType.IsPrimitive)
+			if (fieldType.IsPrimitive)
 			{
-				switch (fieldVariantType)
+				switch (fieldType)
 				{
 				case typeof(int):
 					hasField = jsonObj.Contains<int>(fieldName);
@@ -530,16 +524,14 @@ namespace JSON_Beef.Serialization
 					return false;
 				}
 			}
-			else if (fieldVariantType.IsObject)
+			else if (fieldType.IsObject)
 			{
-				switch (fieldVariantType)
+				switch (fieldType)
 				{
 				case typeof(String):
 					hasField = jsonObj.Contains<String>(fieldName);
 				default:
-					let fieldValue = fieldVariant.Get<Object>();
-
-					if (TypeChecker.IsTypeList(fieldValue))
+					if (TypeChecker.IsTypeList(fieldType))
 					{
 						hasField = jsonObj.Contains<JSONArray>(fieldName);
 					}
