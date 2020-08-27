@@ -135,5 +135,4 @@ let person = JSONDeserialize<Person>(rightJson); // the person object will succe
   - Parse UTF-8 characters e.g.: u0063.
 - Reflection based Object deserialization:
   - Handle Dictionary types.
-  - Handle static fields.
   - Handle properties.
