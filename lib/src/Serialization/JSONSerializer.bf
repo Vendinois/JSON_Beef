@@ -224,6 +224,12 @@ namespace JSON_Beef.Serialization
 			}
 			else if (fieldType.IsObject)
 			{
+				if (!fieldVariant.HasValue)
+				{
+					json.Add<Object>(fieldName, null);
+					return .Ok;
+				}
+
 				var fieldValue = fieldVariant.Get<Object>();
 
 				if (fieldValue == null)

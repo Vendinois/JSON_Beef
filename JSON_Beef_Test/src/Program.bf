@@ -459,15 +459,40 @@ namespace JSON_Beef_Test
 				delete json;
 			}
 
-			/// Need to find a way to reliably test serializing works when serializing to String.
-			/// Especially because of the float that can have representation different than the set value.
-			/*let resStr = JSONSerializer.Serialize<String>(author);
+			var car = Car();
+			car.Age = 25;
+			car.Speed = 160;
+			car.Name = scope String("Aston Martin");
+			car.Sellers = null;
 
-			if (resStr != .Err)
+			let resStruct = JSONSerializer.Serialize<JSONObject>(car);
+
+			if (resStruct != .Err)
 			{
-				Test.Assert(resStr.Value.Equals(finalStr), "JSON Serializing failed #1");
-				delete resStr.Value;
-			}*/
+				let json = resStruct.Value;
+				let str = scope String();
+
+				json.ToString(str);
+
+				var deserializedCar = Car();
+				let res = JSONDeserializer.Deserialize<Car>(str, ref deserializedCar);
+
+				switch (res)
+				{
+				case .Err(let err):
+					Test.Assert(false, "JSON Serializing failed #3");
+				case .Ok(let val):
+					Test.Assert(CarsMatch(car, deserializedCar), "JSON Serializing failed #4");
+				}
+
+				delete json;
+				delete deserializedCar.Name;
+
+				if (deserializedCar.Sellers != null)
+				{
+					delete deserializedCar.Sellers;
+				}
+			}
 
 			Console.WriteLine("JSONSerializing tests passed");
 		}
@@ -601,10 +626,14 @@ namespace JSON_Beef_Test
 		{
 			if ((a.Age != b.Age) ||
 				(!a.Name.Equals(b.Name)) ||
-				(a.Sellers.Count != b.Sellers.Count) ||
 				(!a.Speed.Equals(b.Speed)))
 			{
 				return false;
+			}
+
+			if ((a.Sellers == null) && (b.Sellers == null))
+			{
+				return true;
 			}
 
 			var missingSellers = a.Sellers.Count;

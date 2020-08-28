@@ -83,6 +83,11 @@ namespace JSON_Beef.Types
 					}
 				}
 
+				if (value.Get<Object>() == null)
+				{
+					return default(T);
+				}
+
 				if ((typeof(T) == typeof(JSONObject)) || (typeof(T) == typeof(JSONArray)) || (typeof(T) == typeof(String)))
 				{
 					if (value.VariantType == typeof(T))
@@ -93,11 +98,6 @@ namespace JSON_Beef.Types
 
 					return .Err(.INVALID_RETURN_TYPE);
 				}
-
-				if (value.Get<Object>() == null)
-				{
-					return default(T);
-				}	
 			}
 
 			return .Err(.KEY_NOT_FOUND);
@@ -236,18 +236,24 @@ namespace JSON_Beef.Types
 
 				let variant = dictionary[currentKey];
 
-				switch (variant.VariantType)
+				if (variant.Get<Object>() == null)
 				{
-				case typeof(String):
-					tempStr.AppendF("\"{}\"", variant.Get<String>());
-				case typeof(JSONObject):
-					variant.Get<JSONObject>().ToString(tempStr);
-				case typeof(JSONArray):
-					variant.Get<JSONArray>().ToString(tempStr);
-				default:
-					tempStr.Set(String.Empty);
+					tempStr.Append("null");
 				}
-				//str.Append(tempStr);
+				else
+				{
+					switch (variant.VariantType)
+					{
+					case typeof(String):
+						tempStr.AppendF("\"{}\"", variant.Get<String>());
+					case typeof(JSONObject):
+						variant.Get<JSONObject>().ToString(tempStr);
+					case typeof(JSONArray):
+						variant.Get<JSONArray>().ToString(tempStr);
+					default:
+						tempStr.Set(String.Empty);
+					}
+				}
 
 				str.AppendF("\"{}\":{}", currentKey, tempStr);
 
