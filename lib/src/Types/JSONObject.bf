@@ -6,45 +6,47 @@ namespace JSON_Beef.Types
 {
 	public class JSONObject
 	{
-		private Dictionary<String, Variant> dictionary;
+		private Dictionary<String, Variant> _dictionary = new .();
+		private Dictionary<String, JSON_TYPES> _types = new .();
 
-		public this()
-		{
-			dictionary = new Dictionary<String, Variant>();
-		}
+		public this() {}
 
 		public this(JSONObject obj)
 		{
-			dictionary = new Dictionary<String, Variant>();
-
-			var keys = obj.dictionary.Keys;
+			var keys = obj._dictionary.Keys;
 
 			while (keys.MoveNext())
 			{
 				let key = keys.Current;
 				let value = obj.GetVariant(key);
+				let type = obj.GetValueType(key);
 
-				switch (value.VariantType)
+				if (!value.HasValue)
 				{
-				case typeof(JSONObject):
-					Add(key, value.Get<JSONObject>());
-				case typeof(JSONArray):
-					Add(key, value.Get<JSONArray>());
-				case typeof(String):
-					Add(key, value.Get<String>());
-				default:
-					if (value.Get<Object>() == null)
+					let k = new String(key);
+					_dictionary.Add(k, Variant.Create(default(Object)));
+				}
+				else
+				{
+					switch (value.VariantType)
 					{
-						let k = new String(key);
-						dictionary.Add(k, Variant.Create(default(Object)));
+					case typeof(JSONObject):
+						Add(key, value.Get<JSONObject>());
+					case typeof(JSONArray):
+						Add(key, value.Get<JSONArray>());
+					case typeof(String):
+						Add(key, value.Get<String>());
 					}
 				}
+
+				let k = new String(key);
+				_types[k] = type;
 			}
 		}
 
 		public ~this()
 		{
-			for (var item in dictionary)
+			for (var item in _dictionary)
 			{
 				if (item.value.HasValue)
 				{
@@ -52,178 +54,230 @@ namespace JSON_Beef.Types
 				}
 				delete item.key;
 			}
+			_dictionary.Clear();
+			_types.Clear();
 
-			dictionary.Clear();
-
-			delete dictionary;
+			for (var item in _types)
+			{
+				delete item.key;
+			}
+			delete _types;
+			delete _dictionary;
 		}
 
 		public Result<T, JSON_ERRORS> Get<T>(String key)
 		{
-			if (dictionary.ContainsKey(key))
-			{
-				let value = dictionary[key];
-				let type = typeof(T);
-
-				if (type.IsPrimitive && (value.VariantType == typeof(String)))
-				{
-					if (type == typeof(bool))
-					{
-						bool res = JSONUtil.ParseBool(value.Get<String>());
-						T outVal = default;
-						Internal.MemCpy(&outVal, &res, sizeof(bool));
-						return .Ok(outVal);
-					}
-					else
-					{
-						var res = JSONUtil.ParseNumber<T>(value.Get<String>());
-						T outVal = default;
-						Internal.MemCpy(&outVal, &res, type.Size);
-						return .Ok(outVal);
-					}
-				}
-
-				if (value.Get<Object>() == null)
-				{
-					return default(T);
-				}
-
-				if ((typeof(T) == typeof(JSONObject)) || (typeof(T) == typeof(JSONArray)) || (typeof(T) == typeof(String)))
-				{
-					if (value.VariantType == typeof(T))
-					{
-						T ret = value.Get<T>();
-						return .Ok(ret);
-					}
-
-					return .Err(.INVALID_RETURN_TYPE);
-				}
-			}
-
-			return .Err(.KEY_NOT_FOUND);
+			return Get<T>(key, true);
 		}
 
 		public Result<Object, JSON_ERRORS> Get(String key, Type type)
 		{
-			if (dictionary.ContainsKey(key))
+			return Get(key, type, true);
+		}
+
+		private Result<T, JSON_ERRORS> Get<T>(String key, bool check)
+		{
+			T value = default;
+			return G<T>(key, check, out value);
+
+			let result = Get(key, typeof(T), check);
+
+			switch (result)
 			{
-				let value = dictionary[key];
+			case .Err(let err):
+				return .Err(err);
+			case .Ok(let val):
+				return (T)val;
+			}
+		}
 
-				if (value.VariantType == type)
-				{
-					let ret = value.Get<Object>();
-					return .Ok(ret);
-				}
+		private Result<T, JSON_ERRORS> G<T>(String key, bool check, out T val)
+		{
+			let res = Get(key, typeof(T), check);
 
-				return .Err(.INVALID_TYPE);
+			return val;
+		}
+
+		private Result<Object, JSON_ERRORS> Get(String key, Type type, bool check)
+		{
+			if (check && !Contains(key, type))
+			{
+				return .Err(.KEY_NOT_FOUND);
 			}
 
-			return .Err(.KEY_NOT_FOUND);
+			let variant = GetVariant(key);
+
+			return variant.Get<Object>();
+		}
+
+		private Result<Object, JSON_ERRORS> Get(String key, Type type, bool check, out Object val)
+		{
+			if (check && !Contains(key, type))
+			{
+				return .Err(.KEY_NOT_FOUND);
+			}
+
+			let variant = GetVariant(key);
+
+			val = variant.Get<Object>();
+
+			return val;
 		}
 
 		public Variant GetVariant(String key)
 		{
-			return dictionary[key];
+			return _dictionary[key];
+		}
+
+		public JSON_TYPES GetValueType(String key)
+		{
+			return _types[key];
 		}
 
 		public void Add<T>(String key, Object val)
 		{
-			if (val == null)
-			{
-				let k = new String(key);
-				dictionary.Add(k, Variant.Create(default(T)));
-				return;
-			}
+			Add(key, val, typeof(T));
+		}
 
-			let type = typeof(T);
-
-			if (type.IsPrimitive || (type == typeof(bool)))
+		public void Add(String key, Object val, Type type)
+		{
+			let k = new String(key);
+			if (type.IsPrimitive)
 			{
+				if (type.IsIntegral)
+				{
+					_types[k] = JSON_TYPES.INTEGER;
+				}
+				else if (type.IsFloatingPoint)
+				{
+					_types[k] = JSON_TYPES.FLOAT;
+				}
+				else if (type == typeof(bool))
+				{
+					_types[k] = JSON_TYPES.LITERAL;
+				}
+
 				let str = scope String();
 				val.ToString(str);
 				str.ToLower();
 				Add(key, str);
-				return;
 			}
-
-			switch (type)
+			else
 			{
-			case typeof(JSONObject):
-				Add(key, (JSONObject)val);
-			case typeof(JSONArray):
-				Add(key, (JSONArray)val);
-			case typeof(String):
-				Add(key, (String)val);
-			case typeof(bool):
-				let str = scope String();
-				bool b = (bool)val;
-				b.ToString(str);
-				Add(key, str);
+				switch (type)
+				{
+				case typeof(JSONObject):
+					Add(key, (JSONObject)val);
+					_types[k] = JSON_TYPES.OBJECT;
+				case typeof(JSONArray):
+					Add(key, (JSONArray)val);
+					_types[k] = JSON_TYPES.ARRAY;
+				case typeof(String):
+					Add(key, (String)val);
+					_types[k] = JSON_TYPES.STRING;
+				}
 			}
 		}
 
 		public bool Contains<T>(String key)
 		{
-			if (!dictionary.ContainsKey(key))
+			return Contains(key, typeof(T));
+		}
+
+		public bool Contains(String key, Type type)
+		{
+			if (!_dictionary.ContainsKey(key) || (!_types.ContainsKey(key)))
 			{
 				return false;
 			}
 
+			return ContainsType(key, type);
+		}
+
+		private bool ContainsType(String key, Type type)
+		{
 			let variant = GetVariant(key);
-			let type = typeof(T);
+			let valueType = _types[key];
 
-			if ((variant.VariantType == typeof(String)) && type.IsPrimitive)
+			if (type.IsPrimitive)
 			{
-				if ((type == typeof(bool)) && JSONUtil.ParseBool(variant.Get<String>()) case .Ok(let val))
+				if (type.IsIntegral && (valueType != JSON_TYPES.INTEGER))
 				{
-					return true;
+					return false;
 				}
-				if (JSONUtil.ParseNumber<T>(variant.Get<String>()) case .Ok(let val))
+				else if (type.IsFloatingPoint && (valueType != JSON_TYPES.FLOAT))
 				{
-					return true;
+					return false;
+				}
+				else if (((type == typeof(bool) && (valueType != JSON_TYPES.LITERAL))) || ((type == null) && (valueType != JSON_TYPES.LITERAL)))
+				{
+					return false;
+				}
+			}
+			else
+			{
+				if ((variant.VariantType == typeof(JSONObject)) && (valueType != JSON_TYPES.OBJECT))
+				{
+					return false;
+				}
+				else if ((variant.VariantType == typeof(JSONArray)) && (valueType != JSON_TYPES.ARRAY))
+				{
+					return false;
+				}
+				else if ((variant.VariantType == typeof(String)) && (valueType != JSON_TYPES.STRING))
+				{
+					return false;
 				}
 			}
 
-			if ((type == typeof(JSONObject)) || (type == typeof(JSONArray)) || (type == typeof(String)))
-			{
-				if (variant.VariantType == type)
-				{
-					return true;
-				}
-			}
-
-			if (variant.Get<Object>() == null)
-			{
-				return true;
-			}
-
-			return false;
+			return true;
 		}
 
 		private void Add(String key, String val)
 		{
 			let k = new String(key);
-			let v = new String(val);
-			dictionary.Add(k, Variant.Create(v, true));
+			if (val != null)
+			{
+				let v = new String(val);
+				_dictionary.Add(k, Variant.Create(v, true));
+			}
+			else
+			{
+				_dictionary.Add(k, Variant.Create<String>(null, true));
+			}
 		}
 
 		private void Add(String key, JSONObject val)
 		{
 			let k = new String(key);
-			let v = new JSONObject(val);
-			dictionary.Add(k, Variant.Create(v, true));
+			if (val != null)
+			{
+				let v = new JSONObject(val);
+				_dictionary.Add(k, Variant.Create(v, true));
+			}
+			else
+			{
+				_dictionary.Add(k, Variant.Create<JSONObject>(null, true));
+			}
 		}
 
 		private void Add(String key, JSONArray val)
 		{
 			let k = new String(key);
-			let v = new JSONArray(val);
-			dictionary.Add(k, Variant.Create(v, true));
+			if (val != null)
+			{
+				let v = new JSONArray(val);
+				_dictionary.Add(k, Variant.Create(v, true));
+			}
+			else
+			{
+				_dictionary.Add(k, Variant.Create<JSONArray>(null, true));
+			}
 		}
 
 		public override void ToString(String str)
 		{
-			var keys = dictionary.Keys;
+			var keys = _dictionary.Keys;
 			var tempStr = scope String();
 
 			str.Clear();
@@ -234,24 +288,38 @@ namespace JSON_Beef.Types
 			{
 				let currentKey = keys.Current;
 
-				let variant = dictionary[currentKey];
+				let variant = _dictionary[currentKey];
+				let variantType = variant.VariantType;
 
-				if (variant.Get<Object>() == null)
+				if (!variant.HasValue)
 				{
 					tempStr.Append("null");
 				}
 				else
 				{
-					switch (variant.VariantType)
+					if (variantType.IsIntegral)
 					{
-					case typeof(String):
-						tempStr.AppendF("\"{}\"", variant.Get<String>());
-					case typeof(JSONObject):
-						variant.Get<JSONObject>().ToString(tempStr);
-					case typeof(JSONArray):
-						variant.Get<JSONArray>().ToString(tempStr);
-					default:
-						tempStr.Set(String.Empty);
+						tempStr.AppendF("{}", Get<int64>(currentKey, false));
+					}
+					else if (variantType.IsFloatingPoint)
+					{
+						tempStr.AppendF("{}", Get<float>(currentKey, false));
+					}
+					else if (variantType == typeof(bool))
+					{
+						tempStr.AppendF("{}", Get<bool>(currentKey, false));
+					}
+					else if (variantType == typeof(String))
+					{
+						tempStr.AppendF("\"{}\"", Get<String>(currentKey, false));
+					}
+					else if (variantType == typeof(JSONObject))
+					{
+						Get<JSONObject>(currentKey, false).ToString(tempStr);
+					}
+					else if (variantType == typeof(JSONArray))
+					{
+						Get<JSONArray>(currentKey, false).ToString(tempStr);
 					}
 				}
 

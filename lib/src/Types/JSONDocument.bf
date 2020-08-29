@@ -180,61 +180,6 @@ namespace JSON_Beef.Types
 			return .Ok(i);
 		}
 
-		/*private Result<int, JSON_ERRORS> ParseNumber(String json, ref int outInt, ref float outFloat, ref JSON_TYPES typeParsed)
-		{
-			var strNum = scope String();
-
-			typeParsed = JSON_TYPES.INTEGER;
-
-			int i = 0;
-			for (i = 0; i < json.Length; i++)
-			{
-				let c = json[i];
-
-				if (c == '.')
-				{
-					typeParsed = JSON_TYPES.FLOAT;
-					strNum.Append(c);
-				}
-				else if (!c.IsDigit && (c != '-') && (c != 'e') && (c != 'E') && (c != '+'))
-				{
-					break;
-				}
-				else
-				{
-					strNum.Append(c);
-				}
-			}
-
-			if (typeParsed == JSON_TYPES.INTEGER)
-			{
-				let res = JSONUtil.ParseInt(strNum);
-
-				switch (res)
-				{
-				case .Err(.INVALID_NUMBER_REPRESENTATION):
-					return .Err(.INVALID_NUMBER_REPRESENTATION);
-				default:
-					outInt = res.Get();
-				}
-			}
-			else if (typeParsed == JSON_TYPES.FLOAT)
-			{
-				let res = JSONUtil.ParseFloat(strNum);
-
-				switch (res)
-				{
-				case .Err(.INVALID_NUMBER_REPRESENTATION):
-					return .Err(.INVALID_NUMBER_REPRESENTATION);
-				default:
-					outFloat = res.Get();
-				}
-			}
-
-			// I always want the last parsed char to be a number
-			return .Ok(i - 1);
-		}*/
-
 		private Result<int, JSON_ERRORS> ParseNumber(String json, String outStr)
 		{
 			if (!JSONValidator.IsValidNumber(json))
@@ -269,46 +214,6 @@ namespace JSON_Beef.Types
 			// I always want the last parsed char to be a number
 			return .Ok(i - 1);
 		}
-
-		/*private Result<int, JSON_ERRORS> ParseLiteral(String json, ref JSON_LITERAL outLiteral)
-		{
-			var str = scope String();
-
-			int i = 0;
-			for (i = 0; i < json.Length; i++)
-			{
-				let c = json[i];
-
-				if (!c.IsLetter)
-				{
-					break;
-				}
-				else
-				{
-					str.Append(c);
-				}
-			}
-
-			if (str.Equals("true"))
-			{
-				outLiteral = .TRUE;
-			}
-			else if (str.Equals("false"))
-			{
-				outLiteral = .FALSE;
-			}
-			else if (str.Equals("null"))
-			{
-				outLiteral = .NULL;
-			}
-			else
-			{
-				return .Err(.INVALID_LITERAL_VALUE);
-			}
-
-			// I always want the last parsed char to be a letter
-			return .Ok(i - 1);
-		}*/
 
 		private Result<int, JSON_ERRORS> ParseLiteral(String json, String outStr)
 		{
@@ -402,7 +307,14 @@ namespace JSON_Beef.Types
 						i += val;
 					}
 
-					array.Add<String>(outStr);
+					if (outStr.Contains('.'))
+					{
+						array.Add<float>(outStr);
+					}
+					else
+					{
+						array.Add<int64>(outStr);
+					}
 				}
 				else if (c.IsLetter)
 				{
@@ -424,7 +336,7 @@ namespace JSON_Beef.Types
 					}
 					else
 					{
-						array.Add<String>(outStr);
+						array.Add<bool>(outStr);
 					}
 				}
 				else if (c == '{')
@@ -448,261 +360,6 @@ namespace JSON_Beef.Types
 
 			return .Ok(i);
 		}
-
-		/*private Result<int, JSON_ERRORS> ParseArray(String json, ref JSONArray array)
-		{
-			int i = 0;
-			JSON_TYPES typeParsed = JSON_TYPES.LITERAL;
-
-			for (i = 0; i < json.Length; i++)
-			{
-				let c = json[i];
-
-				if ((c == '[') && (i != 0))
-				{
-					let str = scope String(&json[i]);
-					var outArr = scope JSONArray();
-					let res = ParseArray(str, ref outArr);
-
-					switch (res)
-					{
-					case .Err(let err):
-						return .Err(err);
-					default:
-						i += res.Get();
-					}
-
-					array.Add(outArr);
-				}
-				else if (c == ']')
-				{
-					break;
-				}
-				else if (c == '"')
-				{
-					// We do not want the first char in the string to parse to be taken as a
-					// closing string token.
-					i++;
-					let str = scope String(&json[i]);
-					var outStr = scope String();
-					let res = ParseString(str, outStr);
-
-					switch (res)
-					{
-					case .Err(let err):
-						return .Err(err);
-					default:
-						i += res.Get();
-					}
-
-					array.Add(outStr);
-				}
-				else if ((c == '-') || (c.IsNumber))
-				{
-					let str = scope String(&json[i]);
-					int outInt = 0;
-					float outFloat = 0.f;
-					let res = ParseNumber(str, ref outInt, ref outFloat, ref typeParsed);
-
-					switch (res)
-					{
-					case .Err(let err):
-						return .Err(err);
-					default:
-						i += res.Get();
-					}
-
-					if (typeParsed == JSON_TYPES.INTEGER)
-					{
-						array.Add(outInt);
-					}
-					else if (typeParsed == JSON_TYPES.FLOAT)
-					{
-						array.Add(outFloat);
-					}
-				}
-				else if (c.IsLetter)
-				{
-					let str = scope String(&json[i]);
-					JSON_LITERAL outLiteral = .NULL;
-					let res = ParseLiteral(str, ref outLiteral);
-
-					switch (res)
-					{
-					case .Err(let err):
-						return .Err(err);
-					default:
-						i += res.Get();
-					}
-
-					typeParsed = .LITERAL;
-
-					array.Add(outLiteral);
-				}
-				else if (c == '{')
-				{
-					let str = scope String(&json[i]);
-					var outObject = scope JSONObject();
-
-					let res = ParseObject(str, ref outObject);
-
-					switch (res)
-					{
-					case .Err(let err):
-						return .Err(err);
-					default:
-						i += res.Get();
-					}
-
-					array.Add(outObject);
-				}
-			}
-
-			return .Ok(i);
-		}*/
-
-		/*private Result<int, JSON_ERRORS> ParseObject(String json, ref JSONObject object)
-		{
-			int i = 0;
-			var lookForKey = true;
-			var typeParsed = JSON_TYPES.LITERAL;
-			var key = scope String();
-
-			for (i = 0; i < json.Length; i++)
-			{
-				let c = json[i];
-
-				if ((c == '{') && (!lookForKey))
-				{
-					i++;
-					let str = scope String(&json[i]);
-					var outObject = scope JSONObject();
-
-					let res = ParseObject(str, ref outObject);
-
-					switch (res)
-					{
-					case .Err(let err):
-						return .Err(err);
-					default:
-						i += res.Get();
-					}
-
-					object.Add(key, outObject);
-				}
-				else if (c == '}')
-				{
-					break;
-				}
-				else if (c == '"')
-				{
-					// We do not want the first char in the string to parse to be taken as a
-					// closing string token.
-					i++;
-					let str = scope String(&json[i]);
-
-					if (lookForKey)
-					{
-						key = scope:: String();
-						let res = ParseString(str, key);
-
-						switch (res)
-						{
-						case .Err(let err):
-							return .Err(err);
-						default:
-							i += res.Get();
-						}
-
-						lookForKey = false;
-					}
-					else
-					{
-						var outStr = scope String();
-						let res = ParseString(str, outStr);
-
-						switch (res)
-						{
-						case .Err(let err):
-							return .Err(err);
-						default:
-							i += res.Get();
-						}
-
-						object.Add(key, outStr);
-					}
-				}
-				else if (c.IsDigit || (c == '-') && (!lookForKey))
-				{
-					let str = scope String(&json[i]);
-					var outInt = 0;
-					var outFloat = 0.f;
-					let res = ParseNumber(str, ref outInt, ref outFloat, ref typeParsed);
-
-					switch (res)
-					{
-					case .Err(let err):
-						return .Err(err);
-					default:
-						i += res.Get();
-					}
-
-					if (typeParsed == JSON_TYPES.INTEGER)
-					{
-						object.Add(key, outInt);
-					}
-					else if (typeParsed == JSON_TYPES.FLOAT)
-					{
-						object.Add(key, outFloat);
-					}	
-				}
-				else if (c.IsLetter && (!lookForKey))
-				{
-					let str = scope String(&json[i]);
-					var outLiteral = JSON_LITERAL.NULL;
-
-					let res = ParseLiteral(str, ref outLiteral);
-
-					switch (res)
-					{
-					case .Err(let err):
-						return .Err(err);
-					default:
-						i += res.Get();
-					}
-
-					object.Add(key, outLiteral);
-				}
-				else if (c == '[' && (!lookForKey))
-				{
-					i++;
-					let str = scope String(&json[i]);
-					var outArr = scope JSONArray();
-
-					let res = ParseArray(str, ref outArr);
-
-					switch (res)
-					{
-					case .Err(let err):
-						return .Err(err);
-					default:
-						i += res.Get();
-					}
-
-					object.Add(key, outArr);
-				}
-				else if (c == ',')
-				{
-					lookForKey = true;
-				}
-				/*else if (c == ':')
-				{
-					lookForKey = false;
-				}*/
-			}
-
-			return .Ok(i);
-		}*/
 
 		private Result<int, JSON_ERRORS> ParseObjectInternal(String json, ref JSONObject object)
 		{
@@ -789,7 +446,14 @@ namespace JSON_Beef.Types
 						i += val;
 					}
 
-					object.Add<String>(key, outStr);	
+					if (outStr.Contains('.'))
+					{
+						object.Add<float>(key, outStr);
+					}
+					else
+					{
+						object.Add<int64>(key, outStr);
+					}
 				}
 				else if (c.IsLetter && (!lookForKey))
 				{
@@ -812,7 +476,7 @@ namespace JSON_Beef.Types
 					}
 					else
 					{
-						object.Add<String>(key, outStr);
+						object.Add<bool>(key, outStr);
 					}
 				}
 				else if (c == '[' && (!lookForKey))
@@ -837,10 +501,6 @@ namespace JSON_Beef.Types
 				{
 					lookForKey = true;
 				}
-				/*else if (c == ':')
-				{
-					lookForKey = false;
-				}*/
 			}
 
 			return .Ok(i);
