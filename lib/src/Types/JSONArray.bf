@@ -7,25 +7,23 @@ namespace JSON_Beef.Types
 {
 	public class JSONArray
 	{
-		private List<Variant> list;
+		private List<Variant> _list = new .();
+		private List<JSON_TYPES> _types = new .();
 
 		public int Count
 		{
 			get
 			{
-				return list.Count;
+				return _list.Count;
 			}
 		}
 
 		public this()
 		{
-			list = new List<Variant>();
 		}
 
 		public this(JSONArray array)
 		{
-			list = new List<Variant>();
-
 			for (int i = 0; i < array.Count; i++)
 			{
 				let value = array.GetVariant(i);
@@ -41,7 +39,7 @@ namespace JSON_Beef.Types
 				default:
 					if (value.Get<Object>() == null)
 					{
-						list.Add(Variant.Create(default(Object)));
+						_list.Add(Variant.Create(default(Object)));
 					}
 				}
 			}
@@ -49,107 +47,143 @@ namespace JSON_Beef.Types
 
 		public ~this()
 		{
-			for (var item in list)
+			for (var item in _list)
 			{
 				item.Dispose();
 			}
 
-			list.Clear();
-			delete list;
+			_list.Clear();
+			delete _list;
 		}
 
 		public void Add<T>(Object val)
 		{
-			if (val == null)
-			{
-				list.Add(Variant.Create(default(T)));
-				return;
-			}
+			Add(val, typeof(T));
+		}
 
-			let type = typeof(T);
-
-			if (type.IsPrimitive || (type == typeof(bool)))
+		private void Add(Object val, Type type)
+		{
+			if (type.IsPrimitive)
 			{
+				if (type.IsIntegral)
+				{
+					_types.Add(JSON_TYPES.INTEGER);
+				}
+				else if (type.IsFloatingPoint)
+				{
+					_types.Add(JSON_TYPES.FLOAT);
+				}
+				else if (type == typeof(bool))
+				{
+					_types.Add(JSON_TYPES.LITERAL);
+				}
+
 				let str = scope String();
 				val.ToString(str);
 				str.ToLower();
 				Add(str);
-				return;
 			}
-
-			switch (type)
+			else
 			{
-			case typeof(JSONObject):
-				Add((JSONObject)val);
-			case typeof(JSONArray):
-				Add((JSONArray)val);
-			case typeof(String):
-				Add((String)val);
+				switch (type)
+				{
+				case typeof(JSONObject):
+					Add((JSONObject)val);
+					_types.Add(JSON_TYPES.OBJECT);
+				case typeof(JSONArray):
+					Add((JSONArray)val);
+					_types.Add(JSON_TYPES.ARRAY);
+				case typeof(String):
+					Add((String)val);
+					_types.Add(JSON_TYPES.STRING);
+				}
 			}
 		}
 
 		private void Add(String val)
 		{
 			let v = new String(val);
-			list.Add(Variant.Create(v, true));
+			_list.Add(Variant.Create(v, true));
 		}
 
 		private void Add(JSONObject val)
 		{
 			let v = new JSONObject(val);
-			list.Add(Variant.Create(v, true));
+			_list.Add(Variant.Create(v, true));
 		}
 
 		private void Add(JSONArray val)
 		{
 			let v = new JSONArray(val);
-			list.Add(Variant.Create(v, true));
+			_list.Add(Variant.Create(v, true));
 		}
 
-		public Result<T, JSON_ERRORS> Get<T>(int idx)
+		public Result<void, JSON_ERRORS> Get<T>(int idx, out T dest)
 		{
-			if (idx > list.Count)
+			Object obj = default;
+			if (Get(idx, out obj, typeof(T)) case .Err(let err))
+			{
+				return .Err(err);
+			}
+
+
+			dest = (T)obj;
+			return .Ok;
+		}
+
+		private Result<void, JSON_ERRORS> Get(int idx, out Object dest, Type type)
+		{
+			if (idx > _list.Count)
 			{
 				return .Err(.INDEX_OUT_OF_BOUNDS);
 			}
 
-			let value = list[idx];
-
-			let type = typeof(T);
-
-			if ((value.VariantType == typeof(String)) && type.IsPrimitive)
+			if (!ContainsType(idx, type))
 			{
-				if (type == typeof(bool))
-				{
-					bool res = JSONUtil.ParseBool(value.Get<String>());
-					T outVal = default;
-					Internal.MemCpy(&outVal, &res, sizeof(bool));
-					return .Ok(outVal);
-				}
-				else
-				{
-					var res = JSONUtil.ParseNumber<T>(value.Get<String>());
-					T outVal = default;
-					Internal.MemCpy(&outVal, &res, type.Size);
-					return .Ok(outVal);
-				}
+				return .Err(.INVALID_TYPE);
 			}
 
-			if ((type == typeof(JSONObject)) || (type == typeof(JSONArray)) || (type == typeof(String)))
+			let variant = GetVariant(idx);
+			dest = variant.Get<Object>();
+
+			return .Ok;
+		}
+
+		private bool ContainsType(int idx, Type type)
+		{
+			let variant = GetVariant(idx);
+			let valueType = _types[idx];
+
+			if (type.IsPrimitive)
 			{
-				if (value.VariantType == typeof(T))
+				if (type.IsIntegral && (valueType != JSON_TYPES.INTEGER))
 				{
-					T ret = value.Get<T>();
-					return .Ok(ret);
+					return false;
+				}
+				else if (type.IsFloatingPoint && (valueType != JSON_TYPES.FLOAT))
+				{
+					return false;
+				}
+				else if (((type == typeof(bool) && (valueType != JSON_TYPES.LITERAL))) || ((type == null) && (valueType != JSON_TYPES.LITERAL)))
+				{
+					return false;
 				}
 			}
-
-			if (value.Get<Object>() == null)
+			else
 			{
-				return default(T);
+				if ((variant.VariantType == typeof(JSONObject)) && (valueType != JSON_TYPES.OBJECT))
+				{
+					return false;
+				}
+				else if ((variant.VariantType == typeof(JSONArray)) && (valueType != JSON_TYPES.ARRAY))
+				{
+					return false;
+				}
+				else if ((variant.VariantType == typeof(String)) && (valueType != JSON_TYPES.STRING))
+				{
+					return false;
+				}
 			}
-
-			return .Err(.INVALID_RETURN_TYPE);
 		}
 
 		public override void ToString(String str)
@@ -159,26 +193,56 @@ namespace JSON_Beef.Types
 			str.Clear();
 			str.Append("[");
 
-			for (int i = 0; i < list.Count; i++)
+			for (int i = 0; i < _list.Count; i++)
 			{
-				let variant = list[i];
+				let variant = GetVariant(i);
+				let variantType = variant.VariantType;
 
-				switch (variant.VariantType)
+				if (!variant.HasValue)
 				{
-				case typeof(String):
-					tempStr.AppendF("\"{}\"", variant.Get<String>());
-				case typeof(JSONObject):
-					variant.Get<JSONObject>().ToString(tempStr);
-				case typeof(JSONArray):
-					variant.Get<JSONArray>().ToString(tempStr);
-				default:
-					tempStr.Set(String.Empty);
+					tempStr.Append("null");
 				}
-				//str.Append(tempStr);
+				else
+				{
+					if (variantType.IsIntegral)
+					{
+						int64 dest = default;
+						tempStr.AppendF("{}", Get<int64>(i, out dest));
+					}
+					else if (variantType.IsFloatingPoint)
+					{
+						float dest = default;
+						tempStr.AppendF("{}", Get<float>(i, out dest));
+					}
+					else if (variantType == typeof(bool))
+					{
+						bool dest = default;
+						tempStr.AppendF("{}", Get<bool>(i, out dest));
+					}
+					else if (variantType == typeof(String))
+					{
+						var dest = scope String();
+						tempStr.AppendF("\"{}\"", Get<String>(i, out dest));
+					}
+					else if (variantType == typeof(JSONObject))
+					{
+						var dest = scope JSONObject();
+						Get<JSONObject>(i, out dest);
+
+						dest.ToString(tempStr);
+					}
+					else if (variantType == typeof(JSONArray))
+					{
+						var dest = scope JSONArray();
+						Get<JSONArray>(i, out dest);
+
+						dest.ToString(tempStr);
+					}
+				}
 
 				str.Append(tempStr);
 
-				if (i != (list.Count - 1))
+				if (i != (_list.Count - 1))
 				{
 					str.Append(",");
 				}
@@ -191,7 +255,7 @@ namespace JSON_Beef.Types
 
 		public Variant GetVariant(int idx)
 		{
-			return list[idx];
+			return _list[idx];
 		}
 	}
 }

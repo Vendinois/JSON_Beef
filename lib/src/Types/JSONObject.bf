@@ -101,6 +101,7 @@ namespace JSON_Beef.Types
 			}
 
 			dest = obj;
+			return .Ok;
 		}
 
 		private Result<void, JSON_ERRORS> Get(String key, Type type, out Object dest, bool check)
@@ -116,7 +117,7 @@ namespace JSON_Beef.Types
 			return .Ok;
 		}
 
-		private Result<Object, JSON_ERRORS> Get(String key, Type type, bool check, out Object val)
+		private Result<void, JSON_ERRORS> Get(String key, Type type, bool check, out Object val)
 		{
 			if (check && !Contains(key, type))
 			{
@@ -127,7 +128,7 @@ namespace JSON_Beef.Types
 
 			val = variant.Get<Object>();
 
-			return val;
+			return .Ok;
 		}
 
 		public Variant GetVariant(String key)
@@ -294,7 +295,7 @@ namespace JSON_Beef.Types
 			{
 				let currentKey = keys.Current;
 
-				let variant = _dictionary[currentKey];
+				let variant = GetVariant(currentKey);
 				let variantType = variant.VariantType;
 
 				if (!variant.HasValue)
