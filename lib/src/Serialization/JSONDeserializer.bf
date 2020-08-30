@@ -222,7 +222,8 @@ namespace JSON_Beef.Serialization
 				// Calls recursively for handling List<List<...>>
 				if (TypeChecker.IsTypeList(paramType) && (paramType.CreateObject() case .Ok(let innerList)))
 				{
-					let innerJsonArray = Try!(jsonArray.Get<JSONArray>(i));
+					var innerJsonArray = scope JSONArray();
+					Try!(jsonArray.Get<JSONArray>(i, out innerJsonArray));
 
 					Try!(DeserializeArray(innerJsonArray, innerList));
 
@@ -235,7 +236,8 @@ namespace JSON_Beef.Serialization
 
 				if (TypeChecker.IsUserObject(paramType) && (paramType.CreateObject() case .Ok(let innerObject)))
 				{
-					let jsonObject = Try!(jsonArray.Get<JSONObject>(i));
+					var jsonObject = scope JSONObject();
+					Try!(jsonArray.Get<JSONObject>(i, out jsonObject));
 
 					Try!(DeserializeObject(jsonObject, innerObject));
 
@@ -260,159 +262,141 @@ namespace JSON_Beef.Serialization
 			switch (type)
 			{
 			case typeof(int):
-				if (jsonArray.Get<int>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				int num = default;
+				if (jsonArray.Get<int>(i, out num) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, num);
 			case typeof(int8):
-				if (jsonArray.Get<int8>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				int8 num = default;
+				if (jsonArray.Get<int8>(i, out num) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, num);
 			case typeof(int16):
-				if (jsonArray.Get<int16>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				int16 num = default;
+				if (jsonArray.Get<int16>(i, out num) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, num);
 			case typeof(int32):
-				if (jsonArray.Get<int32>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				int32 num = default;
+				if (jsonArray.Get<int32>(i, out num) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, num);
 			case typeof(int64):
-				if (jsonArray.Get<int64>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				int64 num = default;
+				if (jsonArray.Get<int64>(i, out num) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, num);
 			case typeof(uint):
-				if (jsonArray.Get<uint>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				uint num = default;
+				if (jsonArray.Get<uint>(i, out num) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, num);
 			case typeof(uint8):
-				if (jsonArray.Get<uint8>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				uint8 num = default;
+				if (jsonArray.Get<uint8>(i, out num) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, num);
 			case typeof(uint16):
-				if (jsonArray.Get<uint16>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				uint16 num = default;
+				if (jsonArray.Get<uint16>(i, out num) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, num);
 			case typeof(uint32):
-				if (jsonArray.Get<uint32>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				uint32 num = default;
+				if (jsonArray.Get<uint32>(i, out num) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, num);
 			case typeof(uint64):
-				if (jsonArray.Get<uint64>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				uint32 num = default;
+				if (jsonArray.Get<uint32>(i, out num) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, num);
 			case typeof(char8):
-				if (jsonArray.Get<char8>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				char8 num = default;
+				if (jsonArray.Get<char8>(i, out num) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, num);
 			case typeof(char16):
-				if (jsonArray.Get<char16>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				char16 num = default;
+				if (jsonArray.Get<char16>(i, out num) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, num);
 			case typeof(char32):
-				if (jsonArray.Get<char32>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				char32 num = default;
+				if (jsonArray.Get<char32>(i, out num) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, num);
 			case typeof(float):
-				if (jsonArray.Get<float>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				float num = default;
+				if (jsonArray.Get<float>(i, out num) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, num);
 			case typeof(double):
-				if (jsonArray.Get<double>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				double num = default;
+				if (jsonArray.Get<double>(i, out num) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, num);
 			case typeof(bool):
-				if (jsonArray.Get<bool>(i) case .Ok(let val))
-				{
-					addMethod.Invoke(obj, val);
-				}
-				else
+				bool dest = default;
+				if (jsonArray.Get<bool>(i, out dest) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, dest);
 			case typeof(String):
-				if (jsonArray.Get<String>(i) case .Ok(let val))
-				{
-					var str = new String(val);
-					addMethod.Invoke(obj, str);
-				}
-				else
+				String dest = default;
+				if (jsonArray.Get<String>(i, out dest) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				addMethod.Invoke(obj, new String(dest));
 			}
 
 			return .Ok;
@@ -559,167 +543,150 @@ namespace JSON_Beef.Serialization
 			switch (type)
 			{
 			case typeof(int):
-				if (jsonObj.Get<int>(key) case .Ok(let val))
+				int dest = default;
+				if (jsonObj.Get<int>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(int8):
-				if (jsonObj.Get<int8>(key) case .Ok(let val))
+				int8 dest = default;
+				if (jsonObj.Get<int8>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(int16):
-				if (jsonObj.Get<int16>(key) case .Ok(let val))
+				int16 dest = default;
+				if (jsonObj.Get<int16>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(int32):
-				if (jsonObj.Get<int32>(key) case .Ok(let val))
+				int32 dest = default;
+				if (jsonObj.Get<int32>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(int64):
-				if (jsonObj.Get<int64>(key) case .Ok(let val))
+				int64 dest = default;
+				if (jsonObj.Get<int64>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(uint):
-				if (jsonObj.Get<uint>(key) case .Ok(let val))
+				uint dest = default;
+				if (jsonObj.Get<uint>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(uint8):
-				if (jsonObj.Get<uint8>(key) case .Ok(let val))
+				uint8 dest = default;
+				if (jsonObj.Get<uint8>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(uint16):
-				if (jsonObj.Get<uint16>(key) case .Ok(let val))
+				uint16 dest = default;
+				if (jsonObj.Get<uint16>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(uint32):
-				if (jsonObj.Get<uint32>(key) case .Ok(let val))
+				uint32 dest = default;
+				if (jsonObj.Get<uint32>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(uint64):
-				if (jsonObj.Get<uint64>(key) case .Ok(let val))
+				uint64 dest = default;
+				if (jsonObj.Get<uint64>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(char8):
-				if (jsonObj.Get<char8>(key) case .Ok(let val))
+				char8 dest = default;
+				if (jsonObj.Get<char8>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(char16):
-				if (jsonObj.Get<char16>(key) case .Ok(let val))
+				char16 dest = default;
+				if (jsonObj.Get<char16>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(char32):
-				if (jsonObj.Get<char32>(key) case .Ok(let val))
+				char32 dest = default;
+				if (jsonObj.Get<char32>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(float):
-				if (jsonObj.Get<float>(key) case .Ok(let val))
+				float dest = default;
+				if (jsonObj.Get<float>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(double):
-				if (jsonObj.Get<double>(key) case .Ok(let val))
+				double dest = default;
+				if (jsonObj.Get<double>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(bool):
-				if (jsonObj.Get<bool>(key) case .Ok(let val))
+				bool dest = default;
+				if (jsonObj.Get<bool>(key, out dest) case .Err(let err))
 				{
-					 field.SetValue(tempObj, val);
+					 return .Err(.ERROR_PARSING);
 				}
-				else
-				{
-					return .Err(.ERROR_PARSING);
-				}
+
+				field.SetValue(tempObj, dest);
 			case typeof(String):
-				if (jsonObj.Get<String>(key) case .Ok(let val))
-				{
-					var str = new String(val);
-					var fieldVariant = field.GetValue(tempObj).Value;
-
-					if (fieldVariant.HasValue)
-					{
-						// We need to delete the existing field otherwise it creates a memory leak.
-						delete fieldVariant.Get<Object>();
-					}
-
-					field.SetValue(tempObj, str);
-				}
-				else
+				var dest = scope String();
+				if (jsonObj.Get<String>(key, out dest) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
+
+				var str = new String(dest);
+				var fieldVariant = field.GetValue(tempObj).Value;
+
+				if (fieldVariant.HasValue)
+				{
+					// We need to delete the existing field otherwise it creates a memory leak.
+					delete fieldVariant.Get<Object>();
+				}
+
+				field.SetValue(tempObj, str);
 			default:
 				return .Err(.ERROR_PARSING);
 			}
@@ -737,28 +704,27 @@ namespace JSON_Beef.Serialization
 				tempObj = null;
 			}
 
-			if (jsonObject.Get<JSONObject>(key) case .Ok(let val))
-			{
-				if (val == null)
-				{
-					field.SetValue(tempObj, null);
-					return .Ok;
-				}
-
-				var fieldVariant = field.GetValue(tempObj).Value;
-				if (fieldVariant.HasValue)
-				{
-					delete fieldVariant.Get<Object>();
-				}
-
-				var fieldObject = field.FieldType.CreateObject().Value;
-				Try!(DeserializeObject(val, fieldObject));
-				field.SetValue(tempObj, fieldObject);
-			}
-			else
+			var dest = scope JSONObject();
+			if (jsonObject.Get<JSONObject>(key, out dest) case .Err(let err))
 			{
 				return .Err(.ERROR_PARSING);
 			}
+
+			if (dest == null)
+			{
+				field.SetValue(tempObj, null);
+				return .Ok;
+			}
+
+			var fieldVariant = field.GetValue(tempObj).Value;
+			if (fieldVariant.HasValue)
+			{
+				delete fieldVariant.Get<Object>();
+			}
+
+			var fieldObject = field.FieldType.CreateObject().Value;
+			Try!(DeserializeObject(dest, fieldObject));
+			field.SetValue(tempObj, fieldObject);
 
 			return .Ok;
 		}
@@ -773,28 +739,27 @@ namespace JSON_Beef.Serialization
 				tempObj = null;
 			}
 
-			if (jsonObject.Get<JSONArray>(key) case .Ok(let array))
-			{
-				if (array == null)
-				{
-					field.SetValue(tempObj, null);
-					return .Ok;
-				}
-
-				var fieldVariant = field.GetValue(tempObj).Value;
-				if (fieldVariant.HasValue)
-				{
-					delete fieldVariant.Get<Object>();
-				}
-
-				var fieldList = field.FieldType.CreateObject().Value;
-				Try!(DeserializeArray(array, fieldList));
-				field.SetValue(tempObj, fieldList);
-			}
-			else
+			var dest = scope JSONArray();
+			if (jsonObject.Get<JSONArray>(key, out dest) case .Err(let err))
 			{
 				return .Err(.ERROR_PARSING);
 			}
+
+			if (dest == null)
+			{
+				field.SetValue(tempObj, null);
+				return .Ok;
+			}
+
+			var fieldVariant = field.GetValue(tempObj).Value;
+			if (fieldVariant.HasValue)
+			{
+				delete fieldVariant.Get<Object>();
+			}
+
+			var fieldList = field.FieldType.CreateObject().Value;
+			Try!(DeserializeArray(dest, fieldList));
+			field.SetValue(tempObj, fieldList);
 
 			return .Ok;
 		}

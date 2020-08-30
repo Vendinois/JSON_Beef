@@ -298,9 +298,9 @@ namespace JSON_Beef_Test
 
 		static void ValidateFirstArray(JSONArray array)
 		{
-			var arr = array.Get<JSONArray>(0);
-			Test.Assert(IsValidType<JSONArray>(ref arr), "JSON Parsing failed: Invalid type first value in array");
-			let v = arr.Get();
+			var v = scope JSONArray();
+			var res = array.Get<JSONArray>(0, out v);
+			Test.Assert(IsValidType<JSONArray>(ref res), "JSON Parsing failed: Invalid type first value in array");
 
 			Test.Assert(v.Count == 12, "JSON Parsing failed: invalid count in first array");
 			Test.Assert(IsValidTypeAndValue<int>(v, 0, 42), "JSON Parsing failed: array invalid type or value #1");
@@ -319,9 +319,9 @@ namespace JSON_Beef_Test
 
 		static void ValidateObject(JSONArray array)
 		{
-			var firstObj = array.Get<JSONObject>(1);
-			Test.Assert(IsValidType<JSONObject>(ref firstObj), "JSON Parsing failed: Invalid type second value in array");
-			let v = obj.Get();
+			var v = scope JSONObject();
+			var res = array.Get<JSONObject>(1, out v);
+			Test.Assert(IsValidType<JSONObject>(ref res), "JSON Parsing failed: Invalid type second value in array");
 
 			Test.Assert(IsValidTypeAndValue<int>(v, "a int", 42), "JSON Parsing failed: object invalid type or value #1");
 			Test.Assert(IsValidTypeAndValue<int>(v, "a negative int", -42), "JSON Parsing failed: object invalid type or value #2");
@@ -338,7 +338,7 @@ namespace JSON_Beef_Test
 			Test.Assert(IsValidTypeAndValue<String>(v, "escaped char in string", "line 1 \n\tline 2 \r\n\tline 2"), "JSON Parsing failed: object invalid type or value #13");
 
 			var arr = scope JSONArray();
-			var res = v.Get<JSONArray>("an array", out arr);
+			res = v.Get<JSONArray>("an array", out arr);
 			Test.Assert(IsValidType<JSONArray>(ref res), "JSON Parsing failed: object invalid type or value #14");
 			ValidateArray(arr);
 
@@ -405,10 +405,11 @@ namespace JSON_Beef_Test
 
 		static bool IsValidTypeAndValue<T>(JSONArray a, int idx, T value)
 		{
-			var v = a.Get<T>(idx);
+			T v = default;
+			var res = a.Get<T>(idx, out v);
 
-			var isValidType = IsValidType<T>(ref v);
-			var isValidValue = (v.Get() == value);
+			var isValidType = IsValidType<T>(ref res);
+			var isValidValue = (v == value);
 
 			return (isValidType && isValidValue);
 		}
@@ -416,10 +417,10 @@ namespace JSON_Beef_Test
 		static bool IsValidTypeAndValue<T>(JSONObject o, String key, T value)
 		{
 			T v = default;
-			o.Get<T>(key, out v);
+			var res = o.Get<T>(key, out v);
 
-			var isValidType = IsValidType<T>(ref v);
-			var isValidValue = (v.Get() == value);
+			var isValidType = IsValidType<T>(ref res);
+			var isValidValue = (v == value);
 
 			return (isValidType && isValidValue);
 		}

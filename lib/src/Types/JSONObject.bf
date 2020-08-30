@@ -149,7 +149,7 @@ namespace JSON_Beef.Types
 		public void Add(String key, Object val, Type type)
 		{
 			let k = new String(key);
-			if (type.IsPrimitive)
+			if (type.IsPrimitive || (typeof(bool) == type))
 			{
 				if (type.IsIntegral)
 				{
@@ -182,6 +182,9 @@ namespace JSON_Beef.Types
 				case typeof(String):
 					Add(key, (String)val);
 					_types[k] = JSON_TYPES.STRING;
+				default:
+					Add(key, (JSONObject)val);
+					_types[k] = JSON_TYPES.OBJECT;
 				}
 			}
 		}

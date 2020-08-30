@@ -26,22 +26,37 @@ namespace JSON_Beef.Types
 		{
 			for (int i = 0; i < array.Count; i++)
 			{
-				let value = array.GetVariant(i);
+				let otherVariant = array.GetVariant(i);
+				let otherType = array.GetValueType(i);
 
-				switch (value.VariantType)
+				Object otherValue = default;
+
+				if (!otherVariant.HasValue)
 				{
-				case typeof(JSONObject):
-					Add(value.Get<JSONObject>());
-				case typeof(JSONArray):
-					Add(value.Get<JSONArray>());
-				case typeof(String):
-					Add(value.Get<String>());
-				default:
-					if (value.Get<Object>() == null)
-					{
-						_list.Add(Variant.Create(default(Object)));
-					}
+					otherValue = null;
 				}
+				else
+				{
+					otherValue = otherVariant.Get<Object>();
+				}
+
+				switch (otherType)
+				{
+				case .OBJECT:
+					Add<JSONObject>(otherValue);
+				case .ARRAY:
+					Add<JSONArray>(otherValue);
+				case .STRING:
+					Add<String>(otherValue);
+				case .INTEGER:
+					Add<int64>(otherValue);
+				case .FLOAT:
+					Add<float>(otherValue);
+				case .LITERAL:
+					Add<bool>(otherValue);
+				}
+
+				_types.Add(otherType);
 			}
 		}
 
@@ -63,7 +78,7 @@ namespace JSON_Beef.Types
 
 		private void Add(Object val, Type type)
 		{
-			if (type.IsPrimitive)
+			if (type.IsPrimitive || (typeof(bool) == type))
 			{
 				if (type.IsIntegral)
 				{
@@ -96,26 +111,50 @@ namespace JSON_Beef.Types
 				case typeof(String):
 					Add((String)val);
 					_types.Add(JSON_TYPES.STRING);
+				default:
+					Add((JSONObject)null);
+					_types.Add(JSON_TYPES.OBJECT);
 				}
 			}
 		}
 
 		private void Add(String val)
 		{
-			let v = new String(val);
-			_list.Add(Variant.Create(v, true));
+			if (val != null)
+			{
+				let v = new String(val);
+				_list.Add(Variant.Create(v, true));
+			}
+			else
+			{
+				_list.Add(Variant.Create<String>(null, true));
+			}
 		}
 
 		private void Add(JSONObject val)
 		{
-			let v = new JSONObject(val);
-			_list.Add(Variant.Create(v, true));
+			if (val != null)
+			{
+				let v = new JSONObject(val);
+				_list.Add(Variant.Create(v, true));
+			}
+			else
+			{
+				_list.Add(Variant.Create<JSONObject>(null, true));
+			}
 		}
 
 		private void Add(JSONArray val)
 		{
-			let v = new JSONArray(val);
-			_list.Add(Variant.Create(v, true));
+			if (val != null)
+			{
+				let v = new JSONArray(val);
+				_list.Add(Variant.Create(v, true));
+			}
+			else
+			{
+				_list.Add(Variant.Create<JSONArray>(null, true));
+			}
 		}
 
 		public Result<void, JSON_ERRORS> Get<T>(int idx, out T dest)
@@ -184,6 +223,8 @@ namespace JSON_Beef.Types
 					return false;
 				}
 			}
+
+			return true;
 		}
 
 		public override void ToString(String str)
@@ -256,6 +297,11 @@ namespace JSON_Beef.Types
 		public Variant GetVariant(int idx)
 		{
 			return _list[idx];
+		}
+
+		public JSON_TYPES GetValueType(int idx)
+		{
+			return _types[idx];
 		}
 	}
 }
