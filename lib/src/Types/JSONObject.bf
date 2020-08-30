@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Globalization;
 using JSON_Beef.Util;
 
 namespace JSON_Beef.Types
@@ -337,7 +338,13 @@ namespace JSON_Beef.Types
 					case .FLOAT:
 						float dest = default;
 						Get<float>(currentKey, ref dest);
-						tempStr.AppendF("{}", dest);
+
+						let numStr = scope String();
+						let numInfo = scope NumberFormatInfo();
+						numInfo.NumberDecimalDigits = 10;
+
+						dest.ToString(numStr, "N", numInfo);
+						tempStr.AppendF("{}", numStr);
 					case .LITERAL:
 						bool dest = default;
 						Get<bool>(currentKey, ref dest);
