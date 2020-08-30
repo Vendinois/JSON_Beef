@@ -71,52 +71,23 @@ namespace JSON_Beef.Types
 			delete _dictionary;
 		}
 
-		public Result<void, JSON_ERRORS> Get<T>(String key, out T dest)
+		public Result<void, JSON_ERRORS> Get<T>(String key, ref T dest)
 		{
-			return Get<T>(key, out dest, true);
-		}
-
-		private Result<void, JSON_ERRORS> Get<T>(String key, out T dest, bool check)
-		{
-			Object obj = default;
-			if (Get(key, typeof(T), out obj, check) case .Err(let err))
+			var destVariant = Variant.Create<T>(default(T));
+			if (Get(key, ref destVariant) case .Err(let err))
 			{
 				return .Err(err);
 			}
 
-			dest = (T)obj;
+			dest = destVariant.Get<T>();
 
 			return .Ok;
 		}
 
-		public Result<void, JSON_ERRORS> Get(String key, Type type, out Object dest)
+		private Result<void, JSON_ERRORS> Get(String key, ref Variant dest)
 		{
-			Object obj = default;
-			if (Get(key, type, out obj, true) case .Err(let err))
-			{
-				return .Err(err);
-			}
-
-			dest = obj;
-			return .Ok;
-		}
-
-		private Result<void, JSON_ERRORS> Get(String key, Type type, out Object dest, bool check)
-		{
-			if (check && !Contains(key, type))
-			{
-				return .Err(.KEY_NOT_FOUND);
-			}
-
-			let variant = GetVariant(key);
-			dest = variant.Get<Object>();
-
-			return .Ok;
-		}
-
-		private Result<void, JSON_ERRORS> Get(String key, Type type, bool check, out Object dest)
-		{
-			if (check && !Contains(key, type))
+			let type = dest.VariantType;
+			if (!Contains(key, type))
 			{
 				return .Err(.KEY_NOT_FOUND);
 			}
@@ -128,38 +99,39 @@ namespace JSON_Beef.Types
 				if (type.IsInteger)
 				{
 					let str = variant.Get<String>();
-					let res = JSONUtil.ParseNumber<int64>(str);
+					var res = JSONUtil.ParseNumber<int64>(str).Value;
 
-					dest = res.Value;
+					dest = Variant.Create(type, &res);
 				}
 				else if (type.IsFloatingPoint)
 				{
 					let str = variant.Get<String>();
-					let res = JSONUtil.ParseNumber<float>(str);
+					var res = JSONUtil.ParseNumber<float>(str).Value;
 
-					dest = res.Value;
+					dest = Variant.Create(type, &res);
 				}
 				else if (typeof(bool) == type)
 				{
 					let str = variant.Get<String>();
-					let res = JSONUtil.ParseBool(str);
+					var res = JSONUtil.ParseBool(str).Value;
 
-					dest = res.Value;
+					dest = Variant.Create(type, &res);
 				}
-				else if ((type == typeof(JSONObject)) || (type == typeof(JSONArray)) || (type == typeof(String))
-					&& (variant.VariantType == type))
+				else if ((type == typeof(JSONObject)) && (variant.VariantType == type))
 				{
-					dest = variant.Get<Object>();
+					var res = variant.Get<JSONObject>();
+					dest = Variant.Create<JSONObject>(res);
 				}
-				else
+				else if ((type == typeof(JSONArray)) && (variant.VariantType == type))
 				{
-					dest = null;
-					return .Err(.INVALID_TYPE);
+					var res = variant.Get<JSONArray>();
+					dest = Variant.Create<JSONArray>(res);
 				}
-			}
-			else
-			{
-				dest = null;
+				else if ((type == typeof(String)) && (variant.VariantType == type))
+				{
+					var res = variant.Get<String>();
+					dest = Variant.Create<String>(res);
+				}
 			}
 
 			return .Ok;
@@ -344,34 +316,34 @@ namespace JSON_Beef.Types
 					if (variantType.IsIntegral)
 					{
 						int64 dest = default;
-						tempStr.AppendF("{}", Get<int64>(currentKey, out dest, false));
+						tempStr.AppendF("{}", Get<int64>(currentKey, ref dest));
 					}
 					else if (variantType.IsFloatingPoint)
 					{
 						float dest = default;
-						tempStr.AppendF("{}", Get<float>(currentKey, out dest, false));
+						tempStr.AppendF("{}", Get<float>(currentKey, ref dest));
 					}
 					else if (variantType == typeof(bool))
 					{
 						bool dest = default;
-						tempStr.AppendF("{}", Get<bool>(currentKey, out dest, false));
+						tempStr.AppendF("{}", Get<bool>(currentKey, ref dest));
 					}
 					else if (variantType == typeof(String))
 					{
 						var dest = scope String();
-						tempStr.AppendF("\"{}\"", Get<String>(currentKey, out dest, false));
+						tempStr.AppendF("\"{}\"", Get<String>(currentKey, ref dest));
 					}
 					else if (variantType == typeof(JSONObject))
 					{
 						var dest = scope JSONObject();
-						Get<JSONObject>(currentKey, out dest, false);
+						Get<JSONObject>(currentKey, ref dest);
 
 						dest.ToString(tempStr);
 					}
 					else if (variantType == typeof(JSONArray))
 					{
 						var dest = scope JSONArray();
-						Get<JSONArray>(currentKey, out dest, false);
+						Get<JSONArray>(currentKey, ref dest);
 
 						dest.ToString(tempStr);
 					}

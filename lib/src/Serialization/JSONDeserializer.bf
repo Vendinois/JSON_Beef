@@ -544,7 +544,7 @@ namespace JSON_Beef.Serialization
 			{
 			case typeof(int):
 				int dest = default;
-				if (jsonObj.Get<int>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<int>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -552,7 +552,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(int8):
 				int8 dest = default;
-				if (jsonObj.Get<int8>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<int8>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -560,7 +560,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(int16):
 				int16 dest = default;
-				if (jsonObj.Get<int16>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<int16>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -568,7 +568,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(int32):
 				int32 dest = default;
-				if (jsonObj.Get<int32>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<int32>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -576,7 +576,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(int64):
 				int64 dest = default;
-				if (jsonObj.Get<int64>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<int64>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -584,7 +584,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(uint):
 				uint dest = default;
-				if (jsonObj.Get<uint>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<uint>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -592,7 +592,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(uint8):
 				uint8 dest = default;
-				if (jsonObj.Get<uint8>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<uint8>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -600,7 +600,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(uint16):
 				uint16 dest = default;
-				if (jsonObj.Get<uint16>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<uint16>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -608,7 +608,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(uint32):
 				uint32 dest = default;
-				if (jsonObj.Get<uint32>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<uint32>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -616,7 +616,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(uint64):
 				uint64 dest = default;
-				if (jsonObj.Get<uint64>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<uint64>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -624,7 +624,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(char8):
 				char8 dest = default;
-				if (jsonObj.Get<char8>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<char8>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -632,7 +632,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(char16):
 				char16 dest = default;
-				if (jsonObj.Get<char16>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<char16>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -640,7 +640,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(char32):
 				char32 dest = default;
-				if (jsonObj.Get<char32>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<char32>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -648,7 +648,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(float):
 				float dest = default;
-				if (jsonObj.Get<float>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<float>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -656,7 +656,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(double):
 				double dest = default;
-				if (jsonObj.Get<double>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<double>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -664,7 +664,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(bool):
 				bool dest = default;
-				if (jsonObj.Get<bool>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<bool>(key, ref dest) case .Err(let err))
 				{
 					 return .Err(.ERROR_PARSING);
 				}
@@ -672,7 +672,7 @@ namespace JSON_Beef.Serialization
 				field.SetValue(tempObj, dest);
 			case typeof(String):
 				var dest = scope String();
-				if (jsonObj.Get<String>(key, out dest) case .Err(let err))
+				if (jsonObj.Get<String>(key, ref dest) case .Err(let err))
 				{
 					return .Err(.ERROR_PARSING);
 				}
@@ -705,7 +705,7 @@ namespace JSON_Beef.Serialization
 			}
 
 			var dest = scope JSONObject();
-			if (jsonObject.Get<JSONObject>(key, out dest) case .Err(let err))
+			if (jsonObject.Get<JSONObject>(key, ref dest) case .Err(let err))
 			{
 				return .Err(.ERROR_PARSING);
 			}
@@ -740,7 +740,7 @@ namespace JSON_Beef.Serialization
 			}
 
 			var dest = scope JSONArray();
-			if (jsonObject.Get<JSONArray>(key, out dest) case .Err(let err))
+			if (jsonObject.Get<JSONArray>(key, ref dest) case .Err(let err))
 			{
 				return .Err(.ERROR_PARSING);
 			}

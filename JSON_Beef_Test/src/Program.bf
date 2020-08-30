@@ -338,12 +338,12 @@ namespace JSON_Beef_Test
 			Test.Assert(IsValidTypeAndValue<String>(v, "escaped char in string", "line 1 \n\tline 2 \r\n\tline 2"), "JSON Parsing failed: object invalid type or value #13");
 
 			var arr = scope JSONArray();
-			res = v.Get<JSONArray>("an array", out arr);
+			res = v.Get<JSONArray>("an array", ref arr);
 			Test.Assert(IsValidType<JSONArray>(ref res), "JSON Parsing failed: object invalid type or value #14");
 			ValidateArray(arr);
 
 			var obj = scope JSONObject();
-			res = v.Get<JSONObject>("an object", out obj);
+			res = v.Get<JSONObject>("an object", ref obj);
 			Test.Assert(IsValidType<JSONObject>(ref res), "JSON Parsing failed: object invalid type or value #15");
 			Test.Assert(IsValidTypeAndValue<bool>(obj, "hello", true), "JSON Parsing failed: object invalid type or value #16");
 		}
@@ -365,12 +365,12 @@ namespace JSON_Beef_Test
 			Test.Assert(IsValidTypeAndValue<String>(v, "escaped char in string", "line 1 \n\tline 2 \r\n\tline 2"), "JSON Parsing failed: object invalid type or value #13");
 
 			var arr = scope JSONArray();
-			var res = v.Get<JSONArray>("an array", out arr);
+			var res = v.Get<JSONArray>("an array", ref arr);
 			Test.Assert(IsValidType<JSONArray>(ref res), "JSON Parsing failed: object invalid type or value #14");
 			ValidateArray(arr);
 
 			var obj = scope JSONObject();
-			res = v.Get<JSONObject>("an object", out obj);
+			res = v.Get<JSONObject>("an object", ref obj);
 			Test.Assert(IsValidType<JSONObject>(ref res), "JSON Parsing failed: object invalid type or value #15");
 			Test.Assert(IsValidTypeAndValue<bool>(obj, "hello", true), "JSON Parsing failed: object invalid type or value #16");
 		}
@@ -417,7 +417,7 @@ namespace JSON_Beef_Test
 		static bool IsValidTypeAndValue<T>(JSONObject o, String key, T value)
 		{
 			T v = default;
-			var res = o.Get<T>(key, out v);
+			var res = o.Get<T>(key, ref v);
 
 			var isValidType = IsValidType<T>(ref res);
 			var isValidValue = (v == value);
