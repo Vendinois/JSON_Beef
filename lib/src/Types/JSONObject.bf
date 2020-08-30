@@ -157,8 +157,10 @@ namespace JSON_Beef.Types
 					return .Err(.INVALID_TYPE);
 				}
 			}
-
-			dest = null;
+			else
+			{
+				dest = null;
+			}
 
 			return .Ok;
 		}

@@ -299,7 +299,7 @@ namespace JSON_Beef_Test
 		static void ValidateFirstArray(JSONArray array)
 		{
 			var v = scope JSONArray();
-			var res = array.Get<JSONArray>(0, out v);
+			var res = array.Get<JSONArray>(0, ref v);
 			Test.Assert(IsValidType<JSONArray>(ref res), "JSON Parsing failed: Invalid type first value in array");
 
 			Test.Assert(v.Count == 12, "JSON Parsing failed: invalid count in first array");
@@ -320,7 +320,7 @@ namespace JSON_Beef_Test
 		static void ValidateObject(JSONArray array)
 		{
 			var v = scope JSONObject();
-			var res = array.Get<JSONObject>(1, out v);
+			var res = array.Get<JSONObject>(1, ref v);
 			Test.Assert(IsValidType<JSONObject>(ref res), "JSON Parsing failed: Invalid type second value in array");
 
 			Test.Assert(IsValidTypeAndValue<int>(v, "a int", 42), "JSON Parsing failed: object invalid type or value #1");
@@ -406,7 +406,7 @@ namespace JSON_Beef_Test
 		static bool IsValidTypeAndValue<T>(JSONArray a, int idx, T value)
 		{
 			T v = default;
-			var res = a.Get<T>(idx, out v);
+			var res = a.Get<T>(idx, ref v);
 
 			var isValidType = IsValidType<T>(ref res);
 			var isValidValue = (v == value);
