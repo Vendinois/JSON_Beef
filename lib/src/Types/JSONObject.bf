@@ -87,9 +87,14 @@ namespace JSON_Beef.Types
 		private Result<void, JSON_ERRORS> Get(String key, ref Variant dest)
 		{
 			let type = dest.VariantType;
-			if (!Contains(key, type))
+			if (!ContainsKey(key))
 			{
 				return .Err(.KEY_NOT_FOUND);
+			}
+
+			if (!ContainsType(key, type))
+			{
+				return .Err(.INVALID_TYPE);
 			}
 
 			let variant = GetVariant(key);
@@ -197,20 +202,30 @@ namespace JSON_Beef.Types
 
 		public bool Contains<T>(String key)
 		{
-			return Contains(key, typeof(T));
+			return ContainsKey<T>(key) && ContainsType<T>(key);
 		}
 
-		public bool Contains(String key, Type type)
+		public bool ContainsKey<T>(String key)
+		{
+			return ContainsKey(key);
+		}
+
+		public bool ContainsKey(String key)
 		{
 			if (!_dictionary.ContainsKey(key) || (!_types.ContainsKey(key)))
 			{
 				return false;
 			}
 
-			return ContainsType(key, type);
+			return true;
 		}
 
-		private bool ContainsType(String key, Type type)
+		public bool ContainsType<T>(String key)
+		{
+			return ContainsType(key, typeof(T));
+		}
+
+		public bool ContainsType(String key, Type type)
 		{
 			let variant = GetVariant(key);
 			let valueType = _types[key];
@@ -305,7 +320,7 @@ namespace JSON_Beef.Types
 				let currentKey = keys.Current;
 
 				let variant = GetVariant(currentKey);
-				let variantType = variant.VariantType;
+				let type = GetValueType(currentKey);
 
 				if (!variant.HasValue)
 				{
@@ -313,39 +328,59 @@ namespace JSON_Beef.Types
 				}
 				else
 				{
-					if (variantType.IsIntegral)
+					switch (type)
 					{
+					case .INTEGER:
 						int64 dest = default;
-						tempStr.AppendF("{}", Get<int64>(currentKey, ref dest));
-					}
-					else if (variantType.IsFloatingPoint)
-					{
+						Get<int64>(currentKey, ref dest);
+						tempStr.AppendF("{}", dest);
+					case .FLOAT:
 						float dest = default;
-						tempStr.AppendF("{}", Get<float>(currentKey, ref dest));
-					}
-					else if (variantType == typeof(bool))
-					{
+						Get<float>(currentKey, ref dest);
+						tempStr.AppendF("{}", dest);
+					case .LITERAL:
 						bool dest = default;
-						tempStr.AppendF("{}", Get<bool>(currentKey, ref dest));
-					}
-					else if (variantType == typeof(String))
-					{
-						var dest = scope String();
-						tempStr.AppendF("\"{}\"", Get<String>(currentKey, ref dest));
-					}
-					else if (variantType == typeof(JSONObject))
-					{
+						Get<bool>(currentKey, ref dest);
+						let boolStr = scope String();
+						dest.ToString(boolStr);
+						boolStr.ToLower();
+						tempStr.AppendF("{}", boolStr);
+					case .OBJECT:
 						var dest = scope JSONObject();
 						Get<JSONObject>(currentKey, ref dest);
 
-						dest.ToString(tempStr);
-					}
-					else if (variantType == typeof(JSONArray))
-					{
+						if (dest != null)
+						{
+							dest.ToString(tempStr);
+						}
+						else
+						{
+							tempStr.Append("null");
+						}
+					case .ARRAY:
 						var dest = scope JSONArray();
 						Get<JSONArray>(currentKey, ref dest);
 
-						dest.ToString(tempStr);
+						if (dest != null)
+						{
+							dest.ToString(tempStr);
+						}
+						else
+						{
+							tempStr.Append("null");
+						}
+					case .STRING:
+						var dest = scope String();
+						Get<String>(currentKey, ref dest);
+
+						if (dest != null)
+						{
+							tempStr.AppendF("\"{}\"", dest);
+						}
+						else
+						{
+							tempStr.Append("null");
+						}
 					}
 				}
 

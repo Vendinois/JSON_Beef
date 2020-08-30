@@ -276,7 +276,7 @@ namespace JSON_Beef.Types
 			for (int i = 0; i < _list.Count; i++)
 			{
 				let variant = GetVariant(i);
-				let variantType = variant.VariantType;
+				let type = GetValueType(i);
 
 				if (!variant.HasValue)
 				{
@@ -284,39 +284,59 @@ namespace JSON_Beef.Types
 				}
 				else
 				{
-					if (variantType.IsIntegral)
+					switch (type)
 					{
+					case .INTEGER:
 						int64 dest = default;
-						tempStr.AppendF("{}", Get<int64>(i, ref dest));
-					}
-					else if (variantType.IsFloatingPoint)
-					{
+						Get<int64>(i, ref dest);
+						tempStr.AppendF("{}", dest);
+					case .FLOAT:
 						float dest = default;
-						tempStr.AppendF("{}", Get<float>(i, ref dest));
-					}
-					else if (variantType == typeof(bool))
-					{
+						Get<float>(i, ref dest);
+						tempStr.AppendF("{}", dest);
+					case .LITERAL:
 						bool dest = default;
-						tempStr.AppendF("{}", Get<bool>(i, ref dest));
-					}
-					else if (variantType == typeof(String))
-					{
-						var dest = scope String();
-						tempStr.AppendF("\"{}\"", Get<String>(i, ref dest));
-					}
-					else if (variantType == typeof(JSONObject))
-					{
+						Get<bool>(i, ref dest);
+						let boolStr = scope String();
+						dest.ToString(boolStr);
+						boolStr.ToLower();
+						tempStr.AppendF("{}", boolStr);
+					case .OBJECT:
 						var dest = scope JSONObject();
 						Get<JSONObject>(i, ref dest);
 
-						dest.ToString(tempStr);
-					}
-					else if (variantType == typeof(JSONArray))
-					{
+						if (dest != null)
+						{
+							dest.ToString(tempStr);
+						}
+						else
+						{
+							tempStr.Append("null");
+						}
+					case .ARRAY:
 						var dest = scope JSONArray();
 						Get<JSONArray>(i, ref dest);
 
-						dest.ToString(tempStr);
+						if (dest != null)
+						{
+							dest.ToString(tempStr);
+						}
+						else
+						{
+							tempStr.Append("null");
+						}
+					case .STRING:
+						var dest = scope String();
+						Get<String>(i, ref dest);
+
+						if (dest != null)
+						{
+							tempStr.AppendF("\"{}\"", dest);
+						}
+						else
+						{
+							tempStr.Append("null");
+						}
 					}
 				}
 

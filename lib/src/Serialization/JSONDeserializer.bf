@@ -467,7 +467,8 @@ namespace JSON_Beef.Serialization
 			let fieldName = scope String(field.Name);
 			let fieldType = field.FieldType;
 
-			var hasField = false;
+			// null values are accepted as valid.
+			var hasField = true;
 			if (fieldType.IsPrimitive)
 			{
 				switch (fieldType)

@@ -450,6 +450,7 @@ namespace JSON_Beef_Test
 				let str = scope String();
 
 				json.ToString(str);
+				Console.WriteLine(json);
 
 				let deserializedAuthor = scope Author();
 				let res = JSONDeserializer.Deserialize<Author>(str, deserializedAuthor);
@@ -467,7 +468,7 @@ namespace JSON_Beef_Test
 
 			var car = Car();
 			car.Age = 25;
-			car.Speed = 160;
+			car.Speed = 160.0f;
 			car.Name = scope String("Aston Martin");
 			car.Sellers = null;
 
@@ -479,6 +480,7 @@ namespace JSON_Beef_Test
 				let str = scope String();
 
 				json.ToString(str);
+				Console.WriteLine(json);
 
 				var deserializedCar = Car();
 				let res = JSONDeserializer.Deserialize<Car>(str, ref deserializedCar);
