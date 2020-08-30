@@ -18,7 +18,6 @@ namespace JSON_Beef.Types
 			while (keys.MoveNext())
 			{
 				let key = keys.Current;
-				let typeKey = new String(key);
 				var otherVariant = obj.GetVariant(key);
 				let otherType = obj.GetValueType(key);
 
@@ -48,8 +47,6 @@ namespace JSON_Beef.Types
 				case .LITERAL:
 					Add<bool>(key, otherValue);
 				}
-
-				_types[typeKey] = otherType;
 			}
 		}
 
@@ -117,7 +114,7 @@ namespace JSON_Beef.Types
 			return .Ok;
 		}
 
-		private Result<void, JSON_ERRORS> Get(String key, Type type, bool check, out Object val)
+		private Result<void, JSON_ERRORS> Get(String key, Type type, bool check, out Object dest)
 		{
 			if (check && !Contains(key, type))
 			{
@@ -126,7 +123,42 @@ namespace JSON_Beef.Types
 
 			let variant = GetVariant(key);
 
-			val = variant.Get<Object>();
+			if (variant.HasValue)
+			{
+				if (type.IsInteger)
+				{
+					let str = variant.Get<String>();
+					let res = JSONUtil.ParseNumber<int64>(str);
+
+					dest = res.Value;
+				}
+				else if (type.IsFloatingPoint)
+				{
+					let str = variant.Get<String>();
+					let res = JSONUtil.ParseNumber<float>(str);
+
+					dest = res.Value;
+				}
+				else if (typeof(bool) == type)
+				{
+					let str = variant.Get<String>();
+					let res = JSONUtil.ParseBool(str);
+
+					dest = res.Value;
+				}
+				else if ((type == typeof(JSONObject)) || (type == typeof(JSONArray)) || (type == typeof(String))
+					&& (variant.VariantType == type))
+				{
+					dest = variant.Get<Object>();
+				}
+				else
+				{
+					dest = null;
+					return .Err(.INVALID_TYPE);
+				}
+			}
+
+			dest = null;
 
 			return .Ok;
 		}

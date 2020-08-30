@@ -55,8 +55,6 @@ namespace JSON_Beef.Types
 				case .LITERAL:
 					Add<bool>(otherValue);
 				}
-
-				_types.Add(otherType);
 			}
 		}
 
@@ -174,16 +172,54 @@ namespace JSON_Beef.Types
 		{
 			if (idx > _list.Count)
 			{
+				dest = null;
 				return .Err(.INDEX_OUT_OF_BOUNDS);
 			}
 
 			if (!ContainsType(idx, type))
 			{
+				dest = null;
 				return .Err(.INVALID_TYPE);
 			}
 
 			let variant = GetVariant(idx);
-			dest = variant.Get<Object>();
+
+			if (variant.HasValue)
+			{
+				if (type.IsInteger)
+				{
+					let str = variant.Get<String>();
+					let res = JSONUtil.ParseNumber<int64>(str);
+
+					dest = res.Value;
+				}
+				else if (type.IsFloatingPoint)
+				{
+					let str = variant.Get<String>();
+					let res = JSONUtil.ParseNumber<float>(str);
+
+					dest = res.Value;
+				}
+				else if (typeof(bool) == type)
+				{
+					let str = variant.Get<String>();
+					let res = JSONUtil.ParseBool(str);
+
+					dest = res.Value;
+				}
+				else if ((type == typeof(JSONObject)) || (type == typeof(JSONArray)) || (type == typeof(String))
+					&& (variant.VariantType == type))
+				{
+					dest = variant.Get<Object>();
+				}
+				else
+				{
+					dest = null;
+					return .Err(.INVALID_TYPE);
+				}
+			}
+
+			dest = null;
 
 			return .Ok;
 		}
