@@ -24,6 +24,10 @@ namespace JSON_Beef.Util
 			{
 				return true;
 			}
+			else if (type.IsStruct)
+			{
+				return true;
+			}
 
 			return false;
 		}

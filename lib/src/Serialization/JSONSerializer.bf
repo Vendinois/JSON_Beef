@@ -222,7 +222,7 @@ namespace JSON_Beef.Serialization
 					return .Err;
 				}
 			}
-			else if (fieldType.IsObject)
+			else if (fieldType.IsObject || fieldType.IsStruct)
 			{
 				if (!fieldVariant.HasValue)
 				{
@@ -230,7 +230,10 @@ namespace JSON_Beef.Serialization
 					return .Ok;
 				}
 
-				var fieldValue = fieldVariant.Get<Object>();
+				var data = fieldType.CreateValue();
+
+				//var fieldValue = fieldVariant.Get<Object>();
+				Object fieldValue = data;
 
 				if (fieldValue == null)
 				{
