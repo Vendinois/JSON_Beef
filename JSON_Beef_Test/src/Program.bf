@@ -431,7 +431,6 @@ namespace JSON_Beef_Test
 			let author = scope Author("Jonathan", "Racaud", 25);
 			author.Id = 1;
 			author.Test = 25.4f;
-			//author.Known = false;
 			Author.Known = true;
 			author.Publishers.Add(new String("GoldenBooks"));
 			author.Publishers.Add(new String("AncientBooks"));
@@ -439,8 +438,6 @@ namespace JSON_Beef_Test
 			author.Books.Add(new Book("The Art of War"));
 			author.Books.Add(new Book("Flowers for Algernon"));
 			author.Books.Add(new Book("Another book"));
-
-			//let finalStr = "{\"FirstName\":\"Jonathan\",\"LastName\":\"Racaud\",\"Id\":1,\"Test\":25.4,\"Books\":[{\"Name\":\"The Art of War\"},{\"Name\":\"Flowers for Algernon\"},{\"Name\":\"Another book\"}],\"Publishers\":[\"GoldenBooks\",\"AncientBooks\",\"NewBooks\"]}";
 
 			let resObj = JSONSerializer.Serialize<JSONObject>(author);
 
@@ -511,7 +508,6 @@ namespace JSON_Beef_Test
 			let author = scope Author("Jonathan", "Racaud", 25);
 			author.Id = 256;
 			author.Test = 4.2f;
-			//author.Known = false;
 			Author.Known = true;
 			author.Publishers.Add(new String("GoldenBooks"));
 			author.Publishers.Add(new String("AncientBooks"));
