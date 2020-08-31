@@ -38,7 +38,6 @@ JSON_Beef consists of several objects to manipulate JSON data:
 - JSONUtil: Utility class for working with certain aspect of the JSON specification.
 - JSONSerializer: Class serializing an Object into either a **JSONObject** a **JSONArray** or **String** object.
 - JSONDeserializer: Class deserializing a JSON String into an Object of the specified type **(Work in progress)**
-- JsonList<T>: Class inheriting from List<T> to allow Deserialization of JSON Lists into a List<T> like class. This class does not provided more methods than a List<T>. Its only use is for being able to find the *Add* method through reflection.
 
 **Validating a JSON String:**
 ```c#
@@ -76,8 +75,11 @@ if (JSONValidator.IsValidJson(data) && (doc.GetJsonType(data) == .OBJECT))
 **Serializing a user defined class:**
 Serializing a user defined class uses reflection so in order for it to work, you must declare your class like so:
 ```c#
-[AlwaysInclude(AssumeInstantiated=true, IncludeAllMethods=true)] // Allows for the type to be created via reflection (used by the Deserializer).
-[Reflect] // Allows for the type's fields to be discoverable via reflection in order to serialize them.
+// Allows for the type to be created via reflection (used by the Deserializer).
+[AlwaysInclude(AssumeInstantiated=true, IncludeAllMethods=true)]
+
+// Allows for the type's fields to be discoverable via reflection in order to serialize them.
+[Reflect]
 public class CustomClass
 {
     // public fields will be automatically serialized.
@@ -102,14 +104,21 @@ let str = JSONSerializer.Serialize<String>(object);
 **Deserializing a user defined class:**
 In order to deserialize a user defined type, it must be marked with the following attributes:
 ```c#
-[AlwaysInclude(AssumeInstantiated=true, IncludeAllMethods=true)] // Allows for the type to be created via reflection (used by the Deserializer).
-[Reflect] // Allows for the type's fields to be discoverable via reflection in order to serialize them.
+// Allows for the type to be created via reflection (used by the Deserializer).
+[AlwaysInclude(AssumeInstantiated=true, IncludeAllMethods=true)]
+
+// Allows for the type's fields to be discoverable via reflection in order to serialize them.
+[Reflect]
 ```
 
 Now you can deserialize a JSON string into your CustomClass using JSONDeserializer:
 ```c#
-let customClass = JSONDeserializer.Deserialize<CustomClass>(json);
+let customClass = scope CustomClass();
+let res = JSONDeserializer.Deserialize<CustomClass>(json, customClass);
+// The CustomClass objects will be the target of the deserialization
 ```
+
+Because the Deserialize process needs to allocate memory for the reference type fields of the target object, you need to be sure to delete the fields at the appropriate time to avoid any memory leaks.
 
 For more examples about how to use the library you can look at the JSON_Beef_Test project.
 
@@ -123,10 +132,12 @@ public class Person
 }
 
 let wrongJson = "{\"Firstname\": \"Jonathan\"}";
-let person = JSONDeserialize<Person>(wrongJson); // Will not yield expected results because the type Person doesn't have a field named: Firstname.
+let person = scope Person();
+JSONDeserialize<Person>(wrongJson, person); // return: Error
 
 let rightJson = "{\"FirstName\": \"Jonathan\"}";
-let person = JSONDeserialize<Person>(rightJson); // the person object will successfully be serialized.
+let person = scope Person();
+JSONDeserialize<Person>(rightJson, person); // return: Ok
 ```
 
 ## Todo
