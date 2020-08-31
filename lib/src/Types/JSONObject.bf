@@ -62,12 +62,12 @@ namespace JSON_Beef.Types
 				delete item.key;
 			}
 			_dictionary.Clear();
-			_types.Clear();
 
 			for (var item in _types)
 			{
 				delete item.key;
 			}
+			_types.Clear();
 			delete _types;
 			delete _dictionary;
 		}
@@ -165,15 +165,15 @@ namespace JSON_Beef.Types
 			{
 				if (type.IsIntegral)
 				{
-					_types[k] = JSON_TYPES.INTEGER;
+					_types.Add(k, JSON_TYPES.INTEGER);
 				}
 				else if (type.IsFloatingPoint)
 				{
-					_types[k] = JSON_TYPES.FLOAT;
+					_types.Add(k, JSON_TYPES.FLOAT);
 				}
 				else if (type == typeof(bool))
 				{
-					_types[k] = JSON_TYPES.LITERAL;
+					_types.Add(k, JSON_TYPES.LITERAL);
 				}
 
 				let str = scope String();
@@ -187,16 +187,16 @@ namespace JSON_Beef.Types
 				{
 				case typeof(JSONObject):
 					Add(key, (JSONObject)val);
-					_types[k] = JSON_TYPES.OBJECT;
+					_types.Add(k, JSON_TYPES.OBJECT);
 				case typeof(JSONArray):
 					Add(key, (JSONArray)val);
-					_types[k] = JSON_TYPES.ARRAY;
+					_types.Add(k, JSON_TYPES.ARRAY);
 				case typeof(String):
 					Add(key, (String)val);
-					_types[k] = JSON_TYPES.STRING;
+					_types.Add(k, JSON_TYPES.STRING);
 				default:
 					Add(key, (JSONObject)val);
-					_types[k] = JSON_TYPES.OBJECT;
+					_types.Add(k, JSON_TYPES.OBJECT);
 				}
 			}
 		}

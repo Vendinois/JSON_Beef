@@ -450,7 +450,6 @@ namespace JSON_Beef_Test
 				let str = scope String();
 
 				json.ToString(str);
-				Console.WriteLine(json);
 
 				let deserializedAuthor = scope Author();
 				let res = JSONDeserializer.Deserialize<Author>(str, deserializedAuthor);
@@ -480,7 +479,7 @@ namespace JSON_Beef_Test
 				let str = scope String();
 
 				json.ToString(str);
-				Console.WriteLine(json);
+
 
 				var deserializedCar = Car();
 				let res = JSONDeserializer.Deserialize<Car>(str, ref deserializedCar);

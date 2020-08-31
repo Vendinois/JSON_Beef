@@ -65,9 +65,11 @@ namespace JSON_Beef.Types
 			{
 				item.Dispose();
 			}
-
 			_list.Clear();
+			_types.Clear();
+
 			delete _list;
+			delete _types;
 		}
 
 		public void Add<T>(Object val)
