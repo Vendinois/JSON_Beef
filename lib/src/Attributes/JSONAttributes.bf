@@ -6,4 +6,13 @@ namespace JSON_Beef.Attributes
 	public struct IgnoreSerializeAttribute: Attribute
 	{
 	}
+
+	[AttributeUsage(.All, .ReflectAttribute | .AlwaysIncludeTarget)]
+	public struct SerializableAttribute: Attribute
+	{
+		public void TestAMethod()
+		{
+			Console.WriteLine("Test A method");
+		}
+	}
 }

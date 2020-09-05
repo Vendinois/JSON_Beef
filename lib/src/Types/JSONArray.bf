@@ -72,6 +72,16 @@ namespace JSON_Beef.Types
 			delete _types;
 		}
 
+		public void AddRange<T>(Object range)
+		{
+			let list = range as List<T>;
+
+			for (var item in list)
+			{
+				Add<T>(item);
+			}
+		}
+
 		public void Add<T>(Object val)
 		{
 			Add(val, typeof(T));
