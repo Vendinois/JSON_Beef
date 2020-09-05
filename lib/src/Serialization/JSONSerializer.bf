@@ -108,9 +108,9 @@ namespace JSON_Beef.Serialization
 				case typeof(bool):
 					jsonArray.AddRange<bool>(object);
 				default:
-					var list = (List<Object>)object;
+					var list = (List<Object>*)&object;
 
-					for (var item in list)
+					for (var item in *list)
 					{
 						let res = Serialize<JSONObject>(item);
 
@@ -132,7 +132,7 @@ namespace JSON_Beef.Serialization
 		{
 			let str = new String();
 
-			if (IsList(object))
+			if (TypeChecker.IsTypeList(object))
 			{
 				var obj = object;
 				let res = Serialize<JSONArray>(ref obj);
@@ -160,15 +160,6 @@ namespace JSON_Beef.Serialization
 				delete res.Value;
 			}
 			return .Ok(str);
-		}
-
-		private static bool IsList(Object object)
-		{
-			let type = object.GetType();
-			let typeName = scope String();
-			type.GetName(typeName);
-
-			return typeName.Equals("List") || typeName.Equals("JsonList");
 		}
 
 		private static Result<void> SerializeObjectInternal(Object object, FieldInfo field, JSONObject json)
@@ -244,7 +235,7 @@ namespace JSON_Beef.Serialization
 
 				SerializeObjectBaseTypeInternal(fieldValue, json);
 
-				if (IsList(fieldValue))
+				if (TypeChecker.IsTypeList(fieldValue))
 				{
 					let res = Serialize<JSONArray>(ref fieldValue);
 
@@ -313,7 +304,7 @@ namespace JSON_Beef.Serialization
 				{
 					json.Add<Object>(fieldName, null);
 				}
-				else if (IsList(fieldValue))
+				else if (TypeChecker.IsTypeList(fieldValue))
 				{
 					let res = Serialize<JSONArray>(ref fieldValue);
 
@@ -391,7 +382,7 @@ namespace JSON_Beef.Serialization
 			{
 				json.Add<Object>(null);
 			}
-			else if (IsList(fieldValue))
+			else if (TypeChecker.IsTypeList(fieldValue))
 			{
 				let res = Serialize<JSONArray>(ref fieldValue);
 
