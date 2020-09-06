@@ -40,8 +40,9 @@ namespace JSON_Beef.Serialization
 			return .Ok(json);
 		}
 
-		public static Result<JSONArray> Serialize<T>(ref Object object) where T: JSONArray
+		public static Result<JSONArray> Serialize<T>(Object from) where T: JSONArray
 		{
+			var object = from;
 			if (!TypeChecker.IsTypeList(object) || (object == null))
 			{
 				return .Err;
@@ -58,7 +59,7 @@ namespace JSON_Beef.Serialization
 
 				for (var item in *list)
 				{
-					let res = Serialize<JSONArray>(ref item);
+					let res = Serialize<JSONArray>(item);
 
 					if (res == .Err)
 					{
@@ -128,14 +129,15 @@ namespace JSON_Beef.Serialization
 			return .Ok(jsonArray);
 		}
 
-		public static Result<String> Serialize<T>(Object object) where T: String
+		public static Result<String> Serialize<T>(Object from) where T: String
 		{
+			var object = from;
 			let str = new String();
 
 			if (TypeChecker.IsTypeList(object))
 			{
 				var obj = object;
-				let res = Serialize<JSONArray>(ref obj);
+				let res = Serialize<JSONArray>(obj);
 
 				if (res == .Err)
 				{
@@ -237,7 +239,7 @@ namespace JSON_Beef.Serialization
 
 				if (TypeChecker.IsTypeList(fieldValue))
 				{
-					let res = Serialize<JSONArray>(ref fieldValue);
+					let res = Serialize<JSONArray>(fieldValue);
 
 					if (res == .Err)
 					{
@@ -306,7 +308,7 @@ namespace JSON_Beef.Serialization
 				}
 				else if (TypeChecker.IsTypeList(fieldValue))
 				{
-					let res = Serialize<JSONArray>(ref fieldValue);
+					let res = Serialize<JSONArray>(fieldValue);
 
 					if (res == .Err)
 					{
@@ -384,7 +386,7 @@ namespace JSON_Beef.Serialization
 			}
 			else if (TypeChecker.IsTypeList(fieldValue))
 			{
-				let res = Serialize<JSONArray>(ref fieldValue);
+				let res = Serialize<JSONArray>(fieldValue);
 
 				if (res == .Err)
 				{
