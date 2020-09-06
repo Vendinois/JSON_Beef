@@ -16,8 +16,6 @@ namespace JSON_Beef.Serialization
 				return .Err;
 			}
 
-			let json = new JSONObject();
-
 			Variant from = default;
 
 			if (Variant.CreateFromBoxed(object) case .Ok(let val))
@@ -29,6 +27,7 @@ namespace JSON_Beef.Serialization
 				return .Err;
 			}
 
+			let json = new JSONObject();
 			if (SerializeObject(from, json) case .Err)
 			{
 				return .Err;
@@ -74,12 +73,22 @@ namespace JSON_Beef.Serialization
 
 			let type = from.VariantType;
 			let fields = type.GetFields();
+			var error = false;
 
 			for (var field in fields)
 			{
 				let fieldName = scope String(field.Name);
 				let fieldType = field.FieldType;
-				let variant = field.GetValue(from.Get<Object>());
+				Variant variant = default;
+
+				if (from.VariantType.IsObject)
+				{
+					variant = field.GetValue(from.Get<Object>());
+				}
+				else if (from.VariantType.IsStruct)
+				{
+					variant = field.GetValue(from);
+				}
 
 				if (TypeChecker.IsTypeList(fieldType))
 				{
@@ -87,10 +96,12 @@ namespace JSON_Beef.Serialization
 
 					if (SerializeArray(variant, array) case .Err)
 					{
-						return .Err;
+						error = true;
 					}
-
-					dest.Add<JSONArray>(fieldName, array);
+					else
+					{
+						dest.Add<JSONArray>(fieldName, array);
+					}
 				}
 				else if (TypeChecker.IsUserObject(fieldType))
 				{
@@ -98,21 +109,28 @@ namespace JSON_Beef.Serialization
 
 					if (SerializeObject(variant, obj) case .Err)
 					{
-						return .Err;
+						error = true;
 					}
-
-					dest.Add<JSONObject>(fieldName, obj);
+					else
+					{
+						dest.Add<JSONObject>(fieldName, obj);
+					}
 				}
 				else if (TypeChecker.IsPrimitive(fieldType))
 				{
 					if (SerializePrimitive(fieldName, variant, dest) case .Err)
 					{
-						return .Err;
+						error = true;
 					}
 				}
 				else
 				{
-					return .Err;
+					error = true;
+				}
+
+				if (error)
+				{
+					break;
 				}
 			}
 
@@ -121,12 +139,13 @@ namespace JSON_Beef.Serialization
 
 		private static Result<void> SerializeArray(Variant fieldVariant, JSONArray dest)
 		{
+			var fVariant = fieldVariant;
 			let type = fieldVariant.VariantType as SpecializedGenericType;
 			let genericType = type.GetGenericArg(0);
 
 			if (TypeChecker.IsTypeList(genericType))
 			{
-				var object = fieldVariant.Get<Object>();
+				var object = fVariant.Get<Object>();
 				var list = (List<Object>*)&object;
 
 				for (var item in *list)
@@ -144,21 +163,23 @@ namespace JSON_Beef.Serialization
 			}
 			else if (TypeChecker.IsUserObject(genericType))
 			{
-				var object = fieldVariant.Get<Object>();
+				var object = fVariant.Get<Object>();
 				var list = (List<Object>*)&object;
 
-				for (var item in *list)
+				if (genericType.IsObject)
 				{
-					Variant variant = Variant.CreateFromBoxed(item);
-					let obj = scope JSONObject();
-
-					if (SerializeObject(variant, obj) case .Err)
+					if (SerializeListObject(list, genericType, dest) case .Err)
 					{
 						return .Err;
 					}
-
-					dest.Add<JSONObject>(obj);
 				}
+				else if (genericType.IsStruct)
+				{
+					if (SerializeListStruct(list, genericType, dest) case .Err)
+					{
+						return .Err;
+					}
+				}	
 			}
 			else if (TypeChecker.IsPrimitive(genericType))
 			{
@@ -167,6 +188,62 @@ namespace JSON_Beef.Serialization
 					return .Err;
 				}
 			}
+			return .Ok;
+		}
+
+		private static Result<void> SerializeListObject(List<Object>* list, Type type, JSONArray dest)
+		{
+			for (var item in *list)
+			{
+				Variant variant = Variant.CreateFromBoxed(item);
+
+				let obj = scope JSONObject();
+
+				if (SerializeObject(variant, obj) case .Err)
+				{
+					return .Err;
+				}
+
+				dest.Add<JSONObject>(obj);
+			}
+
+			return .Ok;
+		}
+
+		private static Result<void> SerializeListStruct(List<Object>* list, Type type, JSONArray dest)
+		{
+			for (var item in *list)
+			{
+				Variant variant = Variant.CreateReference(type, &item);
+
+				let obj = scope JSONObject();
+
+				if (SerializeObject(variant, obj) case .Err)
+				{
+					return .Err;
+				}
+
+				dest.Add<JSONObject>(obj);
+			}
+
+			return .Ok;
+		}
+
+		private static Result<void> SerializeList(List<void*>* list, Type type, JSONArray dest)
+		{
+			for (var item in *list)
+			{
+				Variant variant = Variant.CreateReference(type, item);
+				let obj = scope JSONObject();
+
+				if (SerializeObject(variant, obj) case .Err)
+				{
+					return .Err;
+				}
+
+				dest.Add<JSONObject>(obj);
+			}
+
 			return .Ok;
 		}
 
