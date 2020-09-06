@@ -29,7 +29,7 @@ namespace JSON_Beef_Test
 			TestJsonDeserializing();
 			TestStruct();
 
-			Console.WriteLine("Press any [enter] to exit.");
+			Console.WriteLine("Press [enter] to exit.");
 			Console.In.Read();
 		}
 
