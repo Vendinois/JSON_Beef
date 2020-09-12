@@ -1,7 +1,7 @@
 # JSON_Beef
 A JSON parser library made in the Beef programming language.
 
-This is still a work in progress.
+This is still a work in progress and was kind of implemented roughly to get a grasp of Beef at the same type. So major refactoring and potential breaking changes can occure in the future, though I will try to keep that as the bare minimum.
 
 ## Summary
 - [Project Organization](#project-organization)
