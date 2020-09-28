@@ -140,6 +140,8 @@ let person = scope Person();
 JSONDeserialize<Person>(rightJson, person); // return: Ok
 ```
 
+- Deserializing/Serializing struct types do not work well. The reason being with instantiating at runtime using reflection struct types.
+
 ## Todo
 - JSON String parsing:
   - Handle unescaped characters in strings as error.
