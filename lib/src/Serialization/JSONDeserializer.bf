@@ -55,13 +55,11 @@ namespace JSON_Beef.Serialization
 				return .Err(.OBJECT_IS_NULL);
 			}
 
-			let doc = scope JSONDocument();
-
-			switch (doc.GetJsonType(jsonString))
+			switch (JSONParser.GetJsonType(jsonString))
 			{
 			case .OBJECT:
 				var jsonObject = scope JSONObject();
-				doc.ParseObject(jsonString, ref jsonObject);
+				JSONParser.ParseObject(jsonString, ref jsonObject);
 
 				if (!AreTypeMatching(jsonObject, object))
 				{
@@ -71,7 +69,7 @@ namespace JSON_Beef.Serialization
 				return DeserializeObject(jsonObject, object);
 			case .ARRAY:
 				var jsonArray = scope JSONArray();
-				doc.ParseArray(jsonString, ref jsonArray);
+				JSONParser.ParseArray(jsonString, ref jsonArray);
 
 				return DeserializeArray(jsonArray, object);
 			case .UNKNOWN:
