@@ -31,7 +31,7 @@ The JSON_Beef_Test program depends on the Beef Extensions Library that can be fo
 
 ## Using the library
 JSON_Beef consists of several objects to manipulate JSON data:
-- JSONDocument: Used to validate and parse a JSON String into either a **JSONObject** or a **JSONArray**
+- JSONParser: Used to validate and parse a JSON String into either a **JSONObject** or a **JSONArray**
 - JSONObject: Class representing a JSON Object.
 - JSONArray: Class representing a JSON Array.
 - JSONValidator: Class implementing the JSON specification validation rules.
@@ -46,10 +46,9 @@ JSONValidator.IsValidJson(jsonString);
 
 **Parsing a JSON String into a JSONArray:**
 ```c#
-let doc = scope JSONDocument();
-if (JSONValidator.IsValidJson(data) && (doc.GetJsonType(data) == .ARRAY))
+if (JSONValidator.IsValidJson(data) && (JSONParser.GetJsonType(data) == .ARRAY))
 {
-    let array = doc.ParseArray(data);
+    let array = JSONParser.ParseArray(data);
 
     // Work with the JSONArray object.
 
@@ -60,10 +59,9 @@ if (JSONValidator.IsValidJson(data) && (doc.GetJsonType(data) == .ARRAY))
 
 **Parsing a JSON String into a JSON Object:**
 ```c#
-let doc = scope JSONDocument();
-if (JSONValidator.IsValidJson(data) && (doc.GetJsonType(data) == .OBJECT))
+if (JSONValidator.IsValidJson(data) && (JSONParser.GetJsonType(data) == .OBJECT))
 {
-    let array = doc.ParseObject(data);
+    let array = JSONParser.ParseObject(data);
 
     // Work with the JSONAObject object.
 
