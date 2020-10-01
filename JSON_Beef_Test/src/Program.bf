@@ -265,10 +265,9 @@ namespace JSON_Beef_Test
 
 			if (gotData)
 			{
-				let doc = scope JSONDocument();
-				if (JSONValidator.IsValidJson(data) && (doc.GetJsonType(data) == .ARRAY))
+				if (JSONValidator.IsValidJson(data) && (JSONParser.GetJsonType(data) == .ARRAY))
 				{
-					let array = doc.ParseArray(data);
+					let array = JSONParser.ParseArray(data);
 					ValidateArrayFile(array);
 					delete array.Get();
 				}
@@ -278,10 +277,9 @@ namespace JSON_Beef_Test
 
 			if (gotData)
 			{
-				let doc = scope JSONDocument();
-				if (JSONValidator.IsValidJson(data) && (doc.GetJsonType(data) == .OBJECT))
+				if (JSONValidator.IsValidJson(data) && (JSONParser.GetJsonType(data) == .OBJECT))
 				{
-					let object = doc.ParseObject(data);
+					let object = JSONParser.ParseObject(data);
 					ValidateObject(object);
 					delete object.Get();
 				}
